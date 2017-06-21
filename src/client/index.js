@@ -29,5 +29,3 @@ export default function registerServiceWorker(swPath) {
         });
     });
 }
-
-registerServiceWorker('worker.js');
