@@ -1,21 +1,24 @@
 {
   "name": "s3-auth-js",
+  "description": "JavaScript / Service Worker proxy for authenticated S3 access",
   "version": "1.0.0",
-  "main": "index.js",
   "repository": "git@github.com:bbhlondon/s3-auth-js.git",
   "author": "Tomasz Szarzynski <tomasz.szarzynski@bbh.co.uk>",
-  "license": "MIT",
+  "license": "BSD",
   "dependencies": {
-    "eslint": "^4.0.0"
+    "eslint": "^4.0.0",
+    "idb-keyval": "^2.3.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
-    "start": "rollup -w -c rollup.config.client.js && rollup -w -c rollup.config.worker.js"
+    "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js ",
+    "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-latest": "^6.24.1",
+    "browser-sync": "^2.18.12",
+    "concurrently": "^3.4.0",
     "eslint": "^4.0.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",

@@ -1,5 +1,10 @@
-import Logger from '../logger/logger';
+import { handleActivate, handleMessage, handleFetch } from './handlers';
 
-self.addEventListener('activate', function (event) {
-    Logger.log('[Service worker] Activated');
-});
+// Activate
+self.addEventListener('activate', event => handleActivate(event));
+
+// Message
+self.addEventListener('message', event => handleMessage(event));
+
+// Fetch
+self.addEventListener('fetch', event => handleFetch(event));
