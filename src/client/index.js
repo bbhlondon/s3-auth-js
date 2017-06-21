@@ -13,7 +13,7 @@ export default function registerServiceWorker(swPath) {
             logger.log('[Client] The service worker is already active');
             // openCommunicationWithWorker();
         } else {
-            logger.error(`[Client] The page already has another service worker: ${  navigator.serviceWorker.controller.scriptURL}`);
+            logger.error(`[Client] The page already has another service worker: ${navigator.serviceWorker.controller.scriptURL}`);
         }
         return true;
     }
@@ -27,6 +27,16 @@ export default function registerServiceWorker(swPath) {
             // registration failed :(
             logger.log(`[Client] ServiceWorker registration failed: ${err}`);
         });
+    });
+}
+
+function sendMessage(message) {
+    return new Promise(function (resolve, reject) {
+        // note that this is the ServiceWorker.postMessage version
+        navigator.serviceWorker.controller.postMessage(message);
+        window.serviceWorker.onMessage = function (e) {
+            resolve(e.data);
+        };
     });
 }
 

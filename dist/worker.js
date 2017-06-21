@@ -149,6 +149,7 @@ var Logger = function () {
 
 var TOKEN_NAME = 'token';
 var GATEWAY_URL = '/gateway.html';
+var INDEX_URL = '/test.html';
 
 var WHITELISTED_URLS = ['/gateway.html', '/client.js', 'browser-sync'];
 
@@ -162,7 +163,9 @@ function getToken() {
  * @export
  * @returns {Promise}
  */
-
+function setToken(value) {
+  return idbKeyval.set(TOKEN_NAME, value);
+}
 
 /**
  * Delete stored token
@@ -172,17 +175,38 @@ function getToken() {
  */
 
 var logger = new Logger();
-
+// Token
 var token = null;
 
+/**
+ * Is User authorized
+ *
+ * @returns {Boolean}
+ */
 function isAuthorized() {
     return token;
 }
 
+/**
+ * Is request whitelisted
+ *
+ * @param {any} request
+ * @returns {Boolean}
+ */
 function isWhitelisted(request) {
     return WHITELISTED_URLS.find(function (item) {
         return request.url.indexOf(item) !== -1;
     });
+}
+
+/**
+ * Is Gateway request
+ *
+ * @param {any} request
+ * @returns {Boolean}
+ */
+function isGateway(request) {
+    return request.url.indexOf(GATEWAY_URL) !== -1;
 }
 
 function handleActivate(event) {
@@ -193,22 +217,49 @@ function handleActivate(event) {
 }
 
 function handleMessage(event) {
-    logger.log('[Service worker] Message recieved: ' + event.data);
+
+    if (event.data && event.data.type) {
+        logger.log('[Service worker] Message recieved: ' + event.data);
+
+        var client = event.source;
+        var _event$data = event.data,
+            type = _event$data.type,
+            payload = _event$data.payload;
+
+
+        switch (type) {
+            case 'SET_TOKEN':
+                token = payload.token;
+                setToken(token).then(function () {
+                    client.postMessage({ type: 'TOKEN_SET' });
+                });
+                break;
+            default:
+
+        }
+    } else {
+        logger.log('[Service worker] Un-catched message:');
+    }
 }
 
 function handleFetch(event) {
     logger.log('[Service worker] Fetch event: ' + event.request.url);
 
     if (isAuthorized() || isWhitelisted(event.request)) {
-        event.respondWith(fetch(new Request(event.request)).then(function (response) {
-            logger.log('[Service worker] Response received');
-
-            return response;
-        }));
+        if (isGateway(event.request)) {
+            event.respondWith(fetch(new Request(INDEX_URL)).then(function (response) {
+                logger.log('[Service worker] Redirect to index');
+                return response;
+            }));
+        } else {
+            event.respondWith(fetch(new Request(event.request)).then(function (response) {
+                logger.log('[Service worker] Response received');
+                return response;
+            }));
+        }
     } else {
         event.respondWith(fetch(new Request(GATEWAY_URL)).then(function (response) {
             logger.log('[Service worker] Redirect to gateway');
-
             return response;
         }));
     }
