@@ -1,28 +1,41 @@
 {
-  "name": "s3-auth-js",
+  "name": "s3-auth",
   "version": "1.0.0",
+  "description:": "Javascript / Service Worker helper for authenticated AWS S3 website hosting",
   "main": "index.js",
   "repository": "git@github.com:bbhlondon/s3-auth-js.git",
-  "author": "Tomasz Szarzynski <tomasz.szarzynski@bbh.co.uk>",
-  "license": "MIT",
+  "contributors": [
+    "Tomasz Szarzynski <tomasz.szarzynski@bbh.co.uk>",
+    "Marcel Kornblum <marcel.kornblum@bbh.co.uk>"
+  ],
+  "license": "BSD-3-Clause",
   "dependencies": {
     "eslint": "^4.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --coverage",
     "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
     "start": "rollup -w -c rollup.config.client.js && rollup -w -c rollup.config.worker.js"
   },
   "devDependencies": {
+    "babel-helpers": "^6.24.1",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-latest": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
     "eslint": "^4.0.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
+    "jest": "^20.0.4",
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-html-entry": "^0.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-watch": "^4.0.0"
+  },
+  "jest": {
+    "globals": {
+      "navigator": {},
+      "window": {}
+    }
   }
 }
