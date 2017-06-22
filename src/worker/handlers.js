@@ -36,6 +36,12 @@ function isGateway(request) {
     return request.url.indexOf(GATEWAY_URL) !== -1;
 }
 
+/**
+ * Handles Activate Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 export function handleActivate(event) {
     event.waitUntil(
         getToken().then((storedToken) => {
@@ -45,9 +51,14 @@ export function handleActivate(event) {
     );
 }
 
+/**
+ * Handles Message Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 export function handleMessage(event) {
   
-
     if (event.data && event.data.type) {
         logger.log(`[Service worker] Message recieved: ${event.data}`);
 
@@ -71,6 +82,12 @@ export function handleMessage(event) {
     }
 }
 
+/**
+ * Handles Fetch Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 export function handleFetch(event) {
     logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 

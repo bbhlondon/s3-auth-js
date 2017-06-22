@@ -174,6 +174,7 @@ function setToken(value) {
  * @returns {Promise}
  */
 
+// Logger
 var logger = new Logger();
 // Token
 var token = null;
@@ -209,6 +210,12 @@ function isGateway(request) {
     return request.url.indexOf(GATEWAY_URL) !== -1;
 }
 
+/**
+ * Handles Activate Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 function handleActivate(event) {
     event.waitUntil(getToken().then(function (storedToken) {
         token = storedToken;
@@ -216,6 +223,12 @@ function handleActivate(event) {
     }));
 }
 
+/**
+ * Handles Message Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 function handleMessage(event) {
 
     if (event.data && event.data.type) {
@@ -242,6 +255,12 @@ function handleMessage(event) {
     }
 }
 
+/**
+ * Handles Fetch Event
+ * 
+ * @export
+ * @param {any} event 
+ */
 function handleFetch(event) {
     logger.log('[Service worker] Fetch event: ' + event.request.url);
 
