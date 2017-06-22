@@ -33,5 +33,9 @@
     "rollup-watch": "^4.0.0"
   },
   "jest": {
+    "globals": {
+      "navigator": {},
+      "window": {}
+    }
   }
 }
