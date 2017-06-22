@@ -28,6 +28,7 @@ export default function registerServiceWorker(swPath) {
             logger.log(`[Client] ServiceWorker registration failed: ${err}`);
         });
     });
+    return true;
 }
 
 function sendMessage(message) {

@@ -1,35 +1,37 @@
+const test = require('tape');
+const sinon = require('sinon');
+
+import Logger from '../logger/logger';
 import registerServiceWorker from './index';
 
-// Mocks
-let window = {
-    addEventListener: jest.fn()
-}
-jest.mock('../logger/logger');
-// must be a better way to access the mock than this, but...
-import Logger from '../logger/logger';
+
+// Mocks / stubs / spies
+global.navigator = {};
+global.window = {
+    addEventListener: () => { }
+};
 const logger = new Logger();
+sinon.stub(logger, "log");
+const windowEventListener = sinon.stub(global.window, "addEventListener");
 
 
-test('serviceworker functionality doesnt exist', () => {
-    expect(registerServiceWorker('worker.js')).toBe(false);
-    expect(logger.log.mock.calls[0][0]).toBe('[Page] This browser doesn\'t support service workers');
-    expect(logger.log.mock.calls.length).toBe(1);
+test('serviceworker functionality doesnt exist', t => {
+    t.plan(3);
+
+    t.equal(registerServiceWorker('worker.js'), false, 'registerServiceWorker should fail when browser doesn\'t support it');
+    t.equal(logger.log.calledOnce, true);
+    t.equal(logger.log.getCall(0).args[0], '[Page] This browser doesn\'t support service workers');
 });
 
+test('serviceworker.controller doesnt exist', t => {
+    logger.log.reset();
+    global.navigator = {
+        serviceWorker: {}
+    };
+    
+    t.plan(3);
 
-// Update settings
-let navigator = {
-    serviceWorker: {
-        register: jest.fn()
-    }
-}
-
-
-test('serviceworker.controller doesnt exist', () => {
-    logger.log.mockClear();
-    // console.log(navigator);
-    // console.log(('serviceWorker' in navigator));
-    expect(registerServiceWorker('worker.js')).toBe(false);
-    expect(logger.log.mock.calls.length).toBe(1);
-    expect(logger.log.mock.calls[0][0]).toBe('[Client] The service worker needs to be installed');
+    t.equal(registerServiceWorker('worker.js'), true, 'SW is already installed');
+    t.equal(logger.log.calledOnce, true);
+    t.equal(logger.log.getCall(0).args[0], '[Client] The service worker needs to be installed');
 });
