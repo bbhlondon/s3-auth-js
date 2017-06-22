@@ -11,7 +11,7 @@ export default function registerServiceWorker(swPath) {
     if (navigator.serviceWorker.controller) {
         if (navigator.serviceWorker.controller.scriptURL.indexOf(swPath) >= 0) {
             logger.log('[Client] The service worker is already active');
-            // openCommunicationWithWorker();
+            
         } else {
             logger.error(`[Client] The page already has another service worker: ${navigator.serviceWorker.controller.scriptURL}`);
         }
@@ -29,3 +29,15 @@ export default function registerServiceWorker(swPath) {
         });
     });
 }
+
+function sendMessage(message) {
+    return new Promise((resolve, reject) => {
+        navigator.serviceWorker.controller.postMessage(message);
+        window.serviceWorker.onMessage = function (e) {
+            resolve(e.data);
+        };
+    });
+}
+
+registerServiceWorker('worker.js');
+
