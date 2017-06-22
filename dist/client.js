@@ -79,6 +79,7 @@ function registerServiceWorker(swPath) {
             logger.log('[Client] ServiceWorker registration failed: ' + err);
         });
     });
+    return true;
 }
 
 registerServiceWorker('worker.js');
