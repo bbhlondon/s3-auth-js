@@ -1,6 +1,6 @@
 import Logger from '../logger/logger';
 import { getToken, setToken } from './storage';
-import { GATEWAY_URL, INDEX_URL, WHITELISTED_URLS } from './config';
+import { GATEWAY_URL, INDEX_URL, BYPASSED_URLS } from './config';
 
 // Logger
 const logger = new Logger();
@@ -22,8 +22,8 @@ function isAuthorized() {
  * @param {any} request
  * @returns {Boolean}
  */
-function isWhitelisted(request) {
-    return WHITELISTED_URLS.find(item => request.url.indexOf(item) !== -1);
+function isBypassed(request) {
+    return BYPASSED_URLS.find(item => request.url.indexOf(item) !== -1);
 }
 
 /**
@@ -78,7 +78,7 @@ export function handleMessage(event) {
 
     }
     else {
-        logger.log('[Service worker] Un-catched message:');
+        logger.log('[Service worker] Unhandeled message:');
     }
 }
 
@@ -91,7 +91,7 @@ export function handleMessage(event) {
 export function handleFetch(event) {
     logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 
-    if (isAuthorized() || isWhitelisted(event.request)) {
+    if (isAuthorized() || isBypassed(event.request)) {
         if (isGateway(event.request)) {
             event.respondWith(
                 fetch(new Request(INDEX_URL)).then((response) => {

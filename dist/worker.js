@@ -151,7 +151,7 @@ var TOKEN_NAME = 'token';
 var GATEWAY_URL = '/gateway.html';
 var INDEX_URL = '/test.html';
 
-var WHITELISTED_URLS = ['/gateway.html', '/client.js', 'browser-sync'];
+var BYPASSED_URLS = [GATEWAY_URL, '/client.js', 'browser-sync'];
 
 function getToken() {
   return idbKeyval.get(TOKEN_NAME);
@@ -194,8 +194,8 @@ function isAuthorized() {
  * @param {any} request
  * @returns {Boolean}
  */
-function isWhitelisted(request) {
-    return WHITELISTED_URLS.find(function (item) {
+function isBypassed(request) {
+    return BYPASSED_URLS.find(function (item) {
         return request.url.indexOf(item) !== -1;
     });
 }
@@ -251,7 +251,7 @@ function handleMessage(event) {
 
         }
     } else {
-        logger.log('[Service worker] Un-catched message:');
+        logger.log('[Service worker] Unhandeled message:');
     }
 }
 
@@ -264,7 +264,7 @@ function handleMessage(event) {
 function handleFetch(event) {
     logger.log('[Service worker] Fetch event: ' + event.request.url);
 
-    if (isAuthorized() || isWhitelisted(event.request)) {
+    if (isAuthorized() || isBypassed(event.request)) {
         if (isGateway(event.request)) {
             event.respondWith(fetch(new Request(INDEX_URL)).then(function (response) {
                 logger.log('[Service worker] Redirect to index');
