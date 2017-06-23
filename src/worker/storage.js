@@ -18,9 +18,14 @@ export function getToken() {
  * @returns {Promise}
  */
 export function setToken(value) {
-    if (!value) throw Error('Value undefined');
+    try {
+        if (!value) throw Error('Value undefined');
+        if (value && typeof value !== 'string') throw Error('Token must be a string');
 
-    return idb.set(TOKEN_NAME, value).then(() => value);
+        return idb.set(TOKEN_NAME, value).then(() => value);
+    } catch (e) {
+        return Promise.reject(e);
+    }
 }
 
 /**

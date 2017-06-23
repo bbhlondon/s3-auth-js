@@ -18,7 +18,22 @@ test('setToken return passed value', (t) => {
 
 test('setToken throws exception when no value passed', (t) => {
     t.plan(1);
-    t.throws(setToken, Error, 'Value undefined');
+    setToken().then(() => { }, e => t.equal(e.message, 'Value undefined'));
+});
+
+test('setToken throws exception when Array passed', (t) => {
+    t.plan(1);
+    setToken([]).then(() => { }, e => t.equal(e.message, 'Token must be a string'));
+});
+
+test('setToken throws exception when Object passed', (t) => {
+    t.plan(1);
+    setToken({}).then(() => { }, e => t.equal(e.message, 'Token must be a string'));
+});
+
+test('setToken throws exception when undefined passed', (t) => {
+    t.plan(1);
+    setToken(undefined).then(() => { }, e => t.equal(e.message, 'Value undefined'));
 });
 
 test('getToken calls idb', (t) => {

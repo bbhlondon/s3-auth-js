@@ -14,7 +14,7 @@
     "idb-keyval": "^2.3.0"
   },
   "scripts": {
-    "test": "BABEL_ENV=test babel-node src/worker/storage.test.js | faucet",
+    "test": "BABEL_ENV=test babel-node src/worker/storage.test.js --coverage",
     "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
