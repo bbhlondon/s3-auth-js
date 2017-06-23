@@ -1,18 +1,18 @@
-const test = require('tape');
-const sinon = require('sinon');
+import test from 'tape';
+import sinon from 'sinon';
 
 import Logger from '../logger/logger';
 import registerServiceWorker from './index';
 
 
 // Mocks / stubs / spies
-global.navigator = {};
-global.window = {
-    addEventListener: () => { }
-};
+// global.navigator = {};
+// global.window = {
+//     addEventListener: () => { }
+// };
 const logger = new Logger();
 sinon.stub(logger, "log");
-const windowEventListener = sinon.stub(global.window, "addEventListener");
+// const windowEventListener = sinon.stub(global.window, "addEventListener");
 
 
 test('serviceworker functionality doesnt exist', t => {
