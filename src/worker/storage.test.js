@@ -1,8 +1,8 @@
+import test from 'tape';
+import sinon from 'sinon';
 import * as idb from './../idb';
 import { getToken, setToken, deleteToken } from './storage';
 
-const test = require('tape');
-const sinon = require('sinon');
 
 const TEST_TOKEN = '123456';
 
@@ -38,10 +38,10 @@ test('setToken throws exception when undefined passed', (t) => {
 
 test('getToken calls idb', (t) => {
     t.plan(1);
-    getToken().then(() => t.ok(stubGet.calledOnce));
+    getToken().then(() => t.ok(stubGet.called));
 });
 
 test('deleteToken calls idb', (t) => {
     t.plan(1);
-    deleteToken().then(() => t.ok(stubDelete.calledOnce));
+    deleteToken().then(() => t.ok(stubDelete.called));
 });

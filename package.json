@@ -11,10 +11,12 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "eslint": "^4.0.0",
-    "idb-keyval": "^2.3.0"
+    "idb-keyval": "^2.3.0",
+    "tape-run": "^3.0.0"
   },
   "scripts": {
-    "test": "BABEL_ENV=test babel-node src/**/*.test.js | faucet",
+    "pretest": "NODE_ENV=ci",
+    "test": "BABEL_ENV=test browserify -t babelify ./src/**/*.test.js | tape-run | faucet",
     "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
@@ -39,10 +41,12 @@
     "istanbul": "^0.4.5",
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-html-entry": "^0.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-watch": "^4.0.0",
     "sinon": "^2.3.5",
+    "sinon-browser-only": "^1.12.1",
     "tape": "^4.6.3"
   }
 }
