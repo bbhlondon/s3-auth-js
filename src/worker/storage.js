@@ -8,7 +8,7 @@ import { TOKEN_NAME } from './config';
  * @returns {Promise}
  */
 export function getToken() {
-    return idb.get(TOKEN_NAME);
+    return idb.storeGet(TOKEN_NAME);
 }
 
 /**
@@ -22,7 +22,7 @@ export function setToken(value) {
         if (!value) throw Error('Value undefined');
         if (value && typeof value !== 'string') throw Error('Token must be a string');
 
-        return idb.set(TOKEN_NAME, value).then(() => value);
+        return idb.storeSet(TOKEN_NAME, value).then(() => value);
     } catch (e) {
         return Promise.reject(e);
     }
@@ -35,5 +35,5 @@ export function setToken(value) {
  * @returns {Promise}
  */
 export function deleteToken() {
-    return idb.delete(TOKEN_NAME);
+    return idb.storeDelete(TOKEN_NAME);
 }

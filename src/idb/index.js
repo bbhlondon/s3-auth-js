@@ -1,58 +1,104 @@
-let db;
+let idb;
+const DB_NAME = 'keyval-store';
+const STORE_NAME = 'keyval';
 
+/**
+ * Creates IndexedDB
+ *
+ * @returns {Promise}
+ */
 function createDb() {
-    if (!db) {
-        db = new Promise((resolve, reject) => {
-            const openReq = indexedDB.open('keyval-store', 1);
+    if (!idb) {
+        idb = new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 1);
 
-            openReq.onerror = () => {
-                reject(openReq.error);
+            request.onerror = () => {
+                reject(request.error);
             };
 
-            openReq.onupgradeneeded = () => {
+            request.onupgradeneeded = () => {
                 // First time setup: create an empty object store
-                openReq.result.createObjectStore('keyval');
+                request.result.createObjectStore(STORE_NAME);
             };
 
-            openReq.onsuccess = () => {
-                resolve(openReq.result);
+            request.onsuccess = () => {
+                resolve(request.result);
             };
         });
     }
-    return db;
+    return idb;
 }
 
-function withStore(type, callback) {
-    return createDb().then((db) => new Promise((resolve, reject) => {
-        const transaction = db.transaction('keyval', type);
-        transaction.oncomplete = () => {
-            resolve();
-        };
-        transaction.onerror = () => {
-            reject(transaction.error);
-        };
-        callback(transaction.objectStore('keyval'));
-    }));
+/**
+ * Get the store
+ *
+ * @param {String} type Transaction type
+ * @param {Function} operation
+ * @returns {Promise}
+ */
+function withStore(type, operation) {
+    try {
+        if (!type) throw Error('Transaction type undefined');
+        if (typeof type !== 'string') throw Error('Transaction type must be a string');
+
+        if (!operation) throw Error('Operation undefined');
+
+        return createDb().then(db => new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, type);
+            const objectStore = transaction.objectStore(STORE_NAME);
+            const request = operation(objectStore);
+
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+
+            transaction.oncomplete = () => {
+            };
+
+            transaction.onerror = () => {
+                reject(transaction.error);
+            };
+        }));
+    } catch (e) {
+        return Promise.reject(e);
+    }
 }
 
+/**
+ * Get key value
+ *
+ * @param {String} key
+ * @returns {Promise}
+ */
 function storeGet(key) {
-    let req;
-    return withStore('readonly', (store) => {
-        req = store.get(key);
-    }).then(() => req.result);
+    return withStore('readonly', store => store.get(key));
 }
 
+
+/**
+ * Set key value
+ *
+ * @param {String} key
+ * @param {String} value
+ * @returns {Promise}
+ */
 function storeSet(key, value) {
-    return withStore('readwrite', (store) => {
-        store.put(value, key);
-    });
+    return withStore('readwrite', store => store.put(value, key));
 }
 
+/**
+ * Delete key
+ *
+ * @param {String} key
+ * @returns {Promise}
+ */
 function storeDelete(key) {
-    return withStore('readwrite', (store) => {
-        store.delete(key);
-    });
+    return withStore('readwrite', store => store.delete(key));
 }
 
-export { storeGet as get, storeSet as set, storeDelete as delete };
+export { storeGet, storeSet, storeDelete };
 

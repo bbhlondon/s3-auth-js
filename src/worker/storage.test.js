@@ -6,9 +6,9 @@ import { getToken, setToken, deleteToken } from './storage';
 
 const TEST_TOKEN = '123456';
 
-const stubSet = sinon.stub(idb, 'set').callsFake(value => new Promise((resolve, reject) => resolve(value)));
-const stubGet = sinon.stub(idb, 'get').callsFake(value => new Promise((resolve, reject) => resolve(value)));
-const stubDelete = sinon.stub(idb, 'delete').callsFake(value => new Promise((resolve, reject) => resolve(value)));
+const stubSet = sinon.stub(idb, 'storeSet').callsFake(value => new Promise((resolve, reject) => resolve(value)));
+const stubGet = sinon.stub(idb, 'storeGet').callsFake(value => new Promise((resolve, reject) => resolve(value)));
+const stubDelete = sinon.stub(idb, 'storeDelete').callsFake(value => new Promise((resolve, reject) => resolve(value)));
 
 
 test('setToken return passed value', (t) => {
