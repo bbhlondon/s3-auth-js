@@ -2,6 +2,8 @@ let idb;
 const DB_NAME = 'keyval-store';
 const STORE_NAME = 'keyval';
 
+const ERROR_INVALID_OPERATION = '[IDB] Invalid operation';
+
 /**
  * Creates IndexedDB
  *
@@ -33,35 +35,39 @@ function createDb() {
  * Get the store
  *
  * @param {String} type Transaction type
- * @param {Function} operation
+ * @param {Function} operation Function that returns IDBRequest
  * @returns {Promise}
  */
 function withStore(type, operation) {
     try {
-        if (!type) throw Error('Transaction type undefined');
-        if (typeof type !== 'string') throw Error('Transaction type must be a string');
+        if (!type) throw Error('[IDB] Transaction type undefined');
+        if (typeof type !== 'string') throw Error('[IDB] Transaction type must be a string');
 
-        if (!operation) throw Error('Operation undefined');
+        if (!operation) throw Error('[IDB] Operation undefined');
 
         return createDb().then(db => new Promise((resolve, reject) => {
             const transaction = db.transaction(STORE_NAME, type);
             const objectStore = transaction.objectStore(STORE_NAME);
             const request = operation(objectStore);
 
-            request.onsuccess = () => {
-                resolve(request.result);
-            };
+            if (request instanceof IDBRequest) {
+                request.onsuccess = () => {
+                    resolve(request.result);
+                };
 
-            request.onerror = () => {
-                reject(request.error);
-            };
+                request.onerror = () => {
+                    reject(request.error);
+                };
 
-            transaction.oncomplete = () => {
-            };
+                transaction.oncomplete = () => {
+                };
 
-            transaction.onerror = () => {
-                reject(transaction.error);
-            };
+                transaction.onerror = () => {
+                    reject(transaction.error);
+                };
+            } else {
+                throw Error(ERROR_INVALID_OPERATION);
+            }
         }));
     } catch (e) {
         return Promise.reject(e);

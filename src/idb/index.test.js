@@ -1,9 +1,6 @@
 import test from 'tape';
-import sinon from 'sinon';
 import { storeGet, storeSet, storeDelete, __RewireAPI__ as idbRewireAPI } from './index';
 
-
-// const stubIndexedDBOpen = sinon.stub(indexedDB, 'open').callsFake(() => new Promise((resolve, reject) => resolve({})));
 
 test('createDb returns instanceof IDBDatabase', (t) => {
     const createDb = idbRewireAPI.__get__('createDb');
@@ -12,12 +9,13 @@ test('createDb returns instanceof IDBDatabase', (t) => {
     createDb().then(value => t.ok(value instanceof IDBDatabase));
 });
 
-// test('withStore returns Promise', (t) => {
-//     const withStore = idbRewireAPI.__get__('withStore');
+test('withStore throws exception when invalid operation passed', (t) => {
+    const withStore = idbRewireAPI.__get__('withStore');
+    const ERROR_INVALID_OPERATION = idbRewireAPI.__get__('ERROR_INVALID_OPERATION');
 
-//     t.plan(1);
-//     withStore('readwrite', null).then(value => t.ok(value instanceof Promise));
-// });
+    t.plan(1);
+    withStore('readwrite', () => { }).then(() => { }, e => t.equal(e.message, ERROR_INVALID_OPERATION));
+});
 
 
 test('storeGet returns desired key', (t) => {
