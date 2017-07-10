@@ -14,7 +14,7 @@
   },
   "scripts": {
     "pretest": "NODE_ENV=ci",
-    "test": "BABEL_ENV=test browserify ./src/idb/*.test.js -t babelify | tape-run",
+    "test": "BABEL_ENV=test browserify ./src/idb/*.test.js -t babelify | tape-run | faucet",
     "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
