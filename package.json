@@ -10,13 +10,12 @@
   ],
   "license": "BSD-3-Clause",
   "dependencies": {
-    "eslint": "^4.0.0",
-    "idb-keyval": "^2.3.0",
-    "tape-run": "^3.0.0"
+    "babel-plugin-rewire-exports": "^0.2.0",
+    "idb-keyval": "^2.3.0"
   },
   "scripts": {
     "pretest": "NODE_ENV=ci",
-    "test": "BABEL_ENV=test browserify -t babelify ./src/**/*.test.js | tape-run | faucet",
+    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t babelify | tape-run | faucet",
     "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
@@ -34,7 +33,7 @@
     "browserify": "^14.4.0",
     "codecov": "^2.2.0",
     "concurrently": "^3.4.0",
-    "eslint": "^4.0.0",
+    "eslint": "^4.1.1",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
     "faucet": "^0.0.1",
@@ -46,7 +45,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-watch": "^4.0.0",
     "sinon": "^2.3.5",
-    "sinon-browser-only": "^1.12.1",
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "tape-run": "^3.0.0"
   }
 }

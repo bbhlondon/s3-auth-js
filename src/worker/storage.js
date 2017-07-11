@@ -1,4 +1,4 @@
-import * as idb from './../idb';
+import { storeGet, storeSet, storeDelete } from './../idb';
 import { TOKEN_NAME } from './config';
 
 /**
@@ -8,7 +8,7 @@ import { TOKEN_NAME } from './config';
  * @returns {Promise}
  */
 export function getToken() {
-    return idb.get(TOKEN_NAME);
+    return storeGet(TOKEN_NAME);
 }
 
 /**
@@ -22,7 +22,7 @@ export function setToken(value) {
         if (!value) throw Error('Value undefined');
         if (value && typeof value !== 'string') throw Error('Token must be a string');
 
-        return idb.set(TOKEN_NAME, value).then(() => value);
+        return storeSet(TOKEN_NAME, value).then(() => value);
     } catch (e) {
         return Promise.reject(e);
     }
@@ -35,5 +35,5 @@ export function setToken(value) {
  * @returns {Promise}
  */
 export function deleteToken() {
-    return idb.delete(TOKEN_NAME);
+    return storeDelete(TOKEN_NAME);
 }

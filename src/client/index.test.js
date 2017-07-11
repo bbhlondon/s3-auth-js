@@ -15,7 +15,7 @@ sinon.stub(logger, "log");
 // const windowEventListener = sinon.stub(global.window, "addEventListener");
 
 
-test('serviceworker functionality doesnt exist', t => {
+test('serviceworker functionality doesnt exist', { skip: true }, t => {
     t.plan(3);
 
     t.equal(registerServiceWorker('worker.js'), false, 'registerServiceWorker should fail when browser doesn\'t support it');
@@ -23,12 +23,12 @@ test('serviceworker functionality doesnt exist', t => {
     t.equal(logger.log.getCall(0).args[0], '[Page] This browser doesn\'t support service workers');
 });
 
-test('serviceworker.controller doesnt exist', t => {
+test('serviceworker.controller doesnt exist', { skip: true }, t => {
     logger.log.reset();
     global.navigator = {
         serviceWorker: {}
     };
-    
+
     t.plan(3);
 
     t.equal(registerServiceWorker('worker.js'), true, 'SW is already installed');

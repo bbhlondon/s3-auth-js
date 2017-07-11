@@ -1,7 +1,6 @@
 let instance = null;
 
 export default class Logger {
-
     constructor() {
         if (!instance) {
             instance = this;
@@ -12,7 +11,6 @@ export default class Logger {
 
     log(message) {
         console.info(message);
-
     }
 
     error(message) {

@@ -1,15 +1,10 @@
 import test from 'tape';
 import sinon from 'sinon';
-import * as idb from './../idb';
 import { getToken, setToken, deleteToken } from './storage';
+import * as idb from './../idb';
 
 
 const TEST_TOKEN = '123456';
-
-const stubSet = sinon.stub(idb, 'set').callsFake(value => new Promise((resolve, reject) => resolve(value)));
-const stubGet = sinon.stub(idb, 'get').callsFake(value => new Promise((resolve, reject) => resolve(value)));
-const stubDelete = sinon.stub(idb, 'delete').callsFake(value => new Promise((resolve, reject) => resolve(value)));
-
 
 test('setToken return passed value', (t) => {
     t.plan(1);
@@ -37,11 +32,19 @@ test('setToken throws exception when undefined passed', (t) => {
 });
 
 test('getToken calls idb', (t) => {
+    const stub = sinon.stub(idb, 'storeGet').returns(Promise.resolve());
+
     t.plan(1);
-    getToken().then(() => t.ok(stubGet.called));
+    getToken().then(() => t.ok(stub.calledOnce));
+
+    idb.storeGet.restore();
 });
 
 test('deleteToken calls idb', (t) => {
+    const stub = sinon.stub(idb, 'storeDelete').returns(Promise.resolve());
+
     t.plan(1);
-    deleteToken().then(() => t.ok(stubDelete.called));
+    deleteToken().then(() => t.ok(stub.calledOnce));
+
+    idb.storeDelete.restore();
 });
