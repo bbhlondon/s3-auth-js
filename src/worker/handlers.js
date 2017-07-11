@@ -1,9 +1,7 @@
-import Logger from '../logger/logger';
+import Logger from '../logger';
 import { getToken, setToken } from './storage';
 import { GATEWAY_URL, INDEX_URL, BYPASSED_URLS } from './config';
 
-// Logger
-const logger = new Logger();
 // Token
 let token = null;
 
@@ -38,71 +36,67 @@ function isGateway(request) {
 
 /**
  * Handles Activate Event
- * 
+ *
  * @export
- * @param {any} event 
+ * @param {any} event
  */
 export function handleActivate(event) {
     event.waitUntil(
         getToken().then((storedToken) => {
             token = storedToken;
-            logger.log(`[Service worker] Activated with token: ${token}`);
+            Logger.log(`[Service worker] Activated with token: ${token}`);
         }),
     );
 }
 
 /**
  * Handles Message Event
- * 
+ *
  * @export
- * @param {any} event 
+ * @param {any} event
  */
 export function handleMessage(event) {
-  
     if (event.data && event.data.type) {
-        logger.log(`[Service worker] Message recieved: ${event.data}`);
+        Logger.log(`[Service worker] Message recieved: ${event.data}`);
 
         const client = event.source;
         const { type, payload } = event.data;
 
         switch (type) {
-            case 'SET_TOKEN':
-                token = payload.token;
-                setToken(token).then(() => {
-                    client.postMessage({ type: 'TOKEN_SET' });
-                });
-                break;
-            default:
-
+        case 'SET_TOKEN':
+            token = payload.token;
+            setToken(token).then(() => {
+                client.postMessage({ type: 'TOKEN_SET' });
+            });
+            break;
+        default:
         }
-
-    }
-    else {
-        logger.log('[Service worker] Unhandeled message:');
+    } else {
+        Logger.log('[Service worker] Unhandeled message:');
     }
 }
 
 /**
  * Handles Fetch Event
- * 
+ *
  * @export
- * @param {any} event 
+ * @param {any} event
  */
 export function handleFetch(event) {
-    logger.log(`[Service worker] Fetch event: ${event.request.url}`);
+    Logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 
     if (isAuthorized() || isBypassed(event.request)) {
         if (isGateway(event.request)) {
             event.respondWith(
                 fetch(new Request(INDEX_URL)).then((response) => {
-                    logger.log('[Service worker] Redirect to index');
+                    Logger.log('[Service worker] Redirect to index');
                     return response;
                 }),
             );
         } else {
             event.respondWith(
                 fetch(new Request(event.request)).then((response) => {
-                    logger.log('[Service worker] Response received');
+                    Logger.log('[Service worker] Response received');
                     return response;
                 }),
             );
@@ -110,7 +104,7 @@ export function handleFetch(event) {
     } else {
         event.respondWith(
             fetch(new Request(GATEWAY_URL)).then((response) => {
-                logger.log('[Service worker] Redirect to gateway');
+                Logger.log('[Service worker] Redirect to gateway');
                 return response;
             }),
         );

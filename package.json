@@ -15,8 +15,8 @@
   },
   "scripts": {
     "pretest": "NODE_ENV=ci",
-    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t babelify | tape-run | faucet",
-    "build": "rollup -c rollup.config.client.js && rollup -c rollup.config.worker.js",
+    "test": "BABEL_ENV=test browserify ./src/logger/*.test.js -t [ babelify ] | tape-run",
+    "build": "rollup -c --environment ENV:production rollup.config.client.js && rollup -c --environment ENV:production rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
   "devDependencies": {
@@ -43,6 +43,7 @@
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-html-entry": "^0.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^1.1.1",
     "rollup-watch": "^4.0.0",
     "sinon": "^2.3.5",
     "tape": "^4.6.3",
