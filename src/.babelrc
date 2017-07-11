@@ -19,9 +19,7 @@
       "presets": [
         "es2015"
       ],
-      "plugins": [
-        "babel-plugin-rewire"
-      ]
+      "plugins": []
     }
   }
 }
