@@ -1,38 +1,8 @@
 import Logger from '../logger';
-import { getToken, setToken } from './storage';
-import { GATEWAY_URL, INDEX_URL, BYPASSED_URLS } from './config';
+import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
+import { isBypassed, isGateway } from './_handlers';
+import { isAuthorized, setCredentials, getCredentials } from './state';
 
-// Token
-let token = null;
-
-/**
- * Is User authorized
- *
- * @returns {Boolean}
- */
-function isAuthorized() {
-    return token;
-}
-
-/**
- * Is request whitelisted
- *
- * @param {any} request
- * @returns {Boolean}
- */
-function isBypassed(request) {
-    return BYPASSED_URLS.find(item => request.url.indexOf(item) !== -1);
-}
-
-/**
- * Is Gateway request
- *
- * @param {any} request
- * @returns {Boolean}
- */
-function isGateway(request) {
-    return request.url.indexOf(GATEWAY_URL) !== -1;
-}
 
 /**
  * Handles Activate Event
@@ -42,8 +12,7 @@ function isGateway(request) {
  */
 export function handleActivate(event) {
     event.waitUntil(
-        getToken().then((storedToken) => {
-            token = storedToken;
+        getCredentials().then((token) => {
             Logger.log(`[Service worker] Activated with token: ${token}`);
         }),
     );
@@ -64,8 +33,7 @@ export function handleMessage(event) {
 
         switch (type) {
         case 'SET_TOKEN':
-            token = payload.token;
-            setToken(token).then(() => {
+            setCredentials(payload.token).then(() => {
                 client.postMessage({ type: 'TOKEN_SET' });
             });
             break;
@@ -85,28 +53,16 @@ export function handleMessage(event) {
 export function handleFetch(event) {
     Logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 
-    if (isAuthorized() || isBypassed(event.request)) {
+    if (isAuthorized()) {
         if (isGateway(event.request)) {
-            event.respondWith(
-                fetch(new Request(INDEX_URL)).then((response) => {
-                    Logger.log('[Service worker] Redirect to index');
-                    return response;
-                }),
-            );
+            repondWithRedirectToIndex(event);
         } else {
-            event.respondWith(
-                fetch(new Request(event.request)).then((response) => {
-                    Logger.log('[Service worker] Response received');
-                    return response;
-                }),
-            );
+            respondWithRequestedItem(event);
         }
+    } else if (isBypassed(event.request)) {
+        respondWithRequestedItem(event);
     } else {
-        event.respondWith(
-            fetch(new Request(GATEWAY_URL)).then((response) => {
-                Logger.log('[Service worker] Redirect to gateway');
-                return response;
-            }),
-        );
+        respondWithRedirectToGateway(event);
     }
 }
+
