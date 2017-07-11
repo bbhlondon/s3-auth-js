@@ -64,3 +64,28 @@ test('hex returns lowercase base16 format', (t) => {
     t.equal(_.hex('foobar'), '666f6f626172');
     t.equal(_.hex('Hello World!'), '48656c6c6f20576f726c6421');
 });
+
+test('sha256Hash requires string input', (t) => {
+    t.fail('still to be written');
+    t.end();
+});
+
+test('sha256Hash returns valid hash string', (t) => {
+    t.fail('still to be written');
+    t.end();
+});
+
+test('hmacSha256 requires key', (t) => {
+    t.fail('still to be written');
+    t.end();
+});
+
+test('hmacSha256 requires string input', (t) => {
+    t.fail('still to be written');
+    t.end();
+});
+
+test('hmacSha256 returns valid hashed output', (t) => {
+    t.fail('still to be written');
+    t.end();
+});
