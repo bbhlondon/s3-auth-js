@@ -16,3 +16,5 @@ dist/*.js # update to remove the whole dist folder
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+.source*
