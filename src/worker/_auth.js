@@ -3,11 +3,29 @@
  * algorithm exactly, and to remain as easy to follow from the specification at
  * http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html as possible
  */
-import Logger from '../logger/logger';
+// import Logger from '../logger/logger';
+// // Logger
+// const logger = new Logger();
+import {
+    ERROR_INPUT_PARAM_REQUIRED,
+    ERROR_INPUT_PARAM_STRING,
+} from './consts';
 
-// Logger
-const logger = new Logger();
 
+/**
+ * Returns two-digit string of number
+ *
+ * @export
+ * @returns {string}
+ */
+export function pad(number) {
+    if (number === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
+
+    if (number < 10) {
+        return '0' + number;
+    }
+    return number;
+}
 
 /**
  * Lowercase base 16 encoding.
@@ -17,13 +35,15 @@ const logger = new Logger();
  * @returns {string}
  */
 export function hex(input) {
+    if (input === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
+    if (typeof input !== 'string') throw Error(ERROR_INPUT_PARAM_STRING);
+
     let hexVal;
     let i;
-
     let result = '';
     for (i = 0; i < input.length; i += 1) {
         hexVal = input.charCodeAt(i).toString(16);
-        result += ('000' + hexVal).slice(-4);
+        result += pad(hexVal);
     }
 
     return result;
@@ -51,25 +71,12 @@ export function hmacSha256(key, input) {
 }
 
 /**
- * Returns two-digit string of number
- *
- * @export
- * @returns {string}
- */
-export function pad(number) {
-    if (number < 10) {
-        return '0' + number;
-    }
-    return number;
-}
-
-/**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
  *
  * @export
  * @returns {string}
  */
-export function getTimestamp() {
+export function getAWSTimestamp() {
     const now = new Date();
     return now.getUTCFullYear() +
         pad(now.getUTCMonth() + 1) +
