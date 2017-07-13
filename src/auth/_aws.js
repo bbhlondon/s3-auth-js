@@ -3,7 +3,7 @@ import {
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
     ERROR_PARAM_TYPE_IS_NOT_OBJECT,
-} from './consts';
+} from '../consts';
 import {
     pad,
     hex,
