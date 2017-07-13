@@ -36,8 +36,7 @@ test('serviceworker already exist', (t) => {
     stub.restore();
 });
 
-
-test(' tries but fails to register', (t) => {
+test('serviceworker tries but fails to register', (t) => {
     const spy = sinon.spy(navigator.serviceWorker, 'register');
 
     t.plan(2);
