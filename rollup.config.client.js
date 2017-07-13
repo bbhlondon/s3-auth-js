@@ -6,7 +6,6 @@ import replace from 'rollup-plugin-replace';
 export default {
     entry: 'src/client/index.js',
     format: 'iife',
-    moduleName: 'client',
     plugins: [
         resolve(),
         babel({

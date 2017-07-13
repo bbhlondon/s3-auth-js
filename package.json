@@ -16,7 +16,8 @@
   "scripts": {
     "pretest": "NODE_ENV=ci",
     "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run",
-    "build": "rollup -c --environment ENV:production rollup.config.client.js && rollup -c --environment ENV:production rollup.config.worker.js",
+    "build-html": "mustache ./src/client/gateway.json ./src/client/gateway.hbs > ./dist/gateway.html",
+    "build": "yarn run build-html && rollup -c rollup.config.client.js --environment ENV:production && rollup -c  rollup.config.worker.js --environment ENV:production",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
   "devDependencies": {
@@ -37,7 +38,9 @@
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
     "faucet": "^0.0.1",
+    "handlebars": "^4.0.10",
     "istanbul": "^0.4.5",
+    "mustache": "^2.3.0",
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
