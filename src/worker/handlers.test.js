@@ -4,21 +4,7 @@ import { handleFetch } from './handlers';
 import * as _ from './_handlers';
 import * as state from './state';
 import * as responses from './responses';
-import { ERROR_PARAM_REQUIRED } from './consts';
 
-
-test('makeMessgae throws error when type undefined', (t) => {
-    t.plan(1);
-    t.throws(() => _.makeMessage(), ERROR_PARAM_REQUIRED);
-});
-
-test('makeMessgae returns correct message object', (t) => {
-    t.plan(1);
-    const expected = { type: 'test', payload: { test: 'test' } };
-    const msg = _.makeMessage('test', { test: 'test' });
-
-    t.deepLooseEqual(expected, msg);
-});
 
 test('isBypassed filters urls correctly', (t) => {
     const bypassedUrls = ['http://bypassedurl'];

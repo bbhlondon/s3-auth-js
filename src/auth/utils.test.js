@@ -3,7 +3,7 @@ import test from 'tape';
 import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
-} from './consts';
+} from '../consts';
 import {
     pad,
     hex,

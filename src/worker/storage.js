@@ -1,5 +1,6 @@
 import { storeGet, storeSet, storeDelete } from './../idb';
-import { TOKEN_NAME } from './config';
+
+const TOKEN_NAME = 'token';
 
 /**
  * Get stored token

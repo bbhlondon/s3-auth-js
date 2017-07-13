@@ -1,40 +1,30 @@
 import Logger from '../logger';
+import registerServiceWorker from './register';
+import initializeForm from './form';
+import sendMessage from './messaging';
+import { makeMessage } from '../utils';
+import { MESSAGE_SET_CREDENTIALS } from '../consts';
 
-export default function registerServiceWorker(swPath) {
-    if (!('serviceWorker' in navigator)) {
-        Logger.log('[Page] This browser doesn\'t support service workers');
-        return false;
-    }
 
-    if (navigator.serviceWorker.controller) {
-        if (navigator.serviceWorker.controller.scriptURL.indexOf(swPath) >= 0) {
-            Logger.log('[Client] The service worker is already active');
-        } else {
-            Logger.error(`[Client] The page already has another service worker: ${navigator.serviceWorker.controller.scriptURL}`);
-        }
-        return true;
-    }
-
-    Logger.log('[Client] The service worker needs to be installed');
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register(swPath).then((registration) => {
-            // Registration was successful
-            Logger.log(`[Client] ServiceWorker registration successful with scope: ${registration.scope}`);
-        }, (err) => {
-            // registration failed :(
-            Logger.log(`[Client] ServiceWorker registration failed: ${err}`);
+/**
+ * Initialize client
+ * 
+ * @param {any} swPath Path to service worker
+ */
+function initialize(swPath) {
+    registerServiceWorker(swPath).then(() => {
+        initializeForm(document.querySelector('#form'), () => {
+            Logger.log('Submit form');
+            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { token: 'token' })).then(() => {
+                Logger.log('ACK');
+            });
         });
-    });
-    return true;
-}
-
-function sendMessage(message) {
-    return new Promise((resolve, reject) => {
-        navigator.serviceWorker.controller.postMessage(message);
-        window.serviceWorker.onMessage = (e) => {
-            resolve(e.data);
-        };
+    }, (error) => {
+        document.querySelector('#message').textContent = error;
     });
 }
 
-registerServiceWorker('worker.js');
+
+export default {
+    initialize,
+};

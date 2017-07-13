@@ -1,9 +1,9 @@
 import Logger from '../logger';
 import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
-import { isBypassed, isGateway, makeMessage } from './_handlers';
+import { isBypassed, isGateway } from './_handlers';
+import { makeMessage } from '../utils';
 import { isAuthorized, setCredentials, getCredentials, deleteCredentials } from './state';
-import { BYPASSED_URLS, GATEWAY_URL } from './config';
-import { MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from './consts';
+import { BYPASSED_URLS, GATEWAY_URL, MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from '../consts';
 
 
 /**
@@ -27,7 +27,7 @@ export function handleActivate(event) {
     self.clients.claim();
 
     event.waitUntil(
-        getCredentials().then((token) => {
+        getCredentials().then(() => {
             Logger.log(`[Service worker] Activated; isAuthorized: ${isAuthorized()}`);
         }),
     );
@@ -43,18 +43,18 @@ export function handleMessage(event) {
     if (event.data && event.data.type) {
         Logger.log(`[Service worker] Message recieved: ${event.data}`);
 
-        const client = event.source;
+        const port = event.ports[0];
         const { type, payload } = event.data;
 
         switch (type) {
         case MESSAGE_SET_CREDENTIALS:
             setCredentials(payload.token).then(() => {
-                client.postMessage(makeMessage(MESSAGE_CREDENTIALS_SET));
+                port.postMessage(makeMessage(MESSAGE_CREDENTIALS_SET));
             });
             break;
         case MESSAGE_DELETE_CREDENTIALS:
             deleteCredentials().then(() => {
-                client.postMessage(makeMessage(MESSAGE_CREDENTIALS_DELETED));
+                port.postMessage(makeMessage(MESSAGE_CREDENTIALS_DELETED));
             });
             break;
         default:
