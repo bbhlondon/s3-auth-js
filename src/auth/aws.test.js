@@ -9,7 +9,7 @@ import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
-} from './consts';
+} from '../consts';
 
 
 test('getAWSTimestamp returns right format', (t) => {

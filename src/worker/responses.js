@@ -1,5 +1,5 @@
 import Logger from '../logger';
-import { GATEWAY_URL, INDEX_URL } from './config';
+import { GATEWAY_URL, INDEX_URL } from '../consts';
 
 
 export function respondWithRedirectToGateway(event) {
