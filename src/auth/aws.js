@@ -5,18 +5,18 @@
  */
 
 import {
-    ERROR_INPUT_PARAM_REQUIRED,
-    ERROR_INPUT_PARAM_STRING,
-    ERROR_INPUT_PARAM_BOOLEAN,
+    ERROR_PARAM_REQUIRED,
+    ERROR_PARAM_TYPE_IS_NOT_STRING,
+    ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
 } from './consts';
 import {
     pad,
     hex,
 } from './utils';
-import {
-    sha256Hash,
-    hmacSha256,
-} from './hash';
+// import {
+//     sha256Hash,
+//     hmacSha256,
+// } from './hash';
 
 /**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
@@ -26,12 +26,7 @@ import {
  */
 export function getAWSTimestamp() {
     const now = new Date();
-    return now.getUTCFullYear() +
-        pad(now.getUTCMonth() + 1) +
-        pad(now.getUTCDate()) + 'T' +
-        pad(now.getUTCHours()) +
-        pad(now.getUTCMinutes()) +
-        pad(now.getUTCSeconds()) + 'Z';
+    return `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
 }
 
 /**
@@ -50,10 +45,10 @@ export function getAWSTimestamp() {
  * @returns {string}
  */
 export function AWSURIEncode(input, encodeSlash) {
-    if (input === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
-    if (encodeSlash === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
-    if (typeof input !== 'string') throw Error(ERROR_INPUT_PARAM_STRING);
-    if (typeof encodeSlash !== 'boolean') throw Error(ERROR_INPUT_PARAM_BOOLEAN);
+    if (input === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (encodeSlash === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof input !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+    if (typeof encodeSlash !== 'boolean') throw Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN);
 
     let ch;
     let i;
@@ -67,7 +62,7 @@ export function AWSURIEncode(input, encodeSlash) {
         } else if (ch === '/') {
             result += encodeSlash ? '%2F' : ch;
         } else {
-            result += '%' + hex(ch).toUpperCase();
+            result += `%${hex(ch).toUpperCase()}`;
         }
     }
     return result;

@@ -1,6 +1,6 @@
 import test from 'tape';
 
-if (process.env.NODE_ENV === 'ci') {
+if (process.env.BABEL_ENV === 'test') {
     test.onFinish(function () {
         window.close();
     });

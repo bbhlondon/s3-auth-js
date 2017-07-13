@@ -1,8 +1,8 @@
 import test from 'tape';
 
 import {
-    ERROR_INPUT_PARAM_REQUIRED,
-    ERROR_INPUT_PARAM_STRING,
+    ERROR_PARAM_REQUIRED,
+    ERROR_PARAM_TYPE_IS_NOT_STRING,
 } from './consts';
 import {
     pad,
@@ -12,8 +12,8 @@ import {
 
 test('pad needs an input', (t) => {
     t.plan(2);
-    t.throws(() => pad(), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.doesNotThrow(() => pad(0), Error(ERROR_INPUT_PARAM_REQUIRED));
+    t.throws(() => pad(), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => pad(0), Error(ERROR_PARAM_REQUIRED));
 });
 
 test('pad does pad single digit input to string', (t) => {
@@ -38,12 +38,12 @@ test('pad does not pad double or longer digit input', (t) => {
 
 test('hex needs a string input', (t) => {
     t.plan(6);
-    t.throws(() => hex(), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.throws(() => hex(0), Error(ERROR_INPUT_PARAM_STRING));
-    t.throws(() => hex({}), Error(ERROR_INPUT_PARAM_STRING));
-    t.throws(() => hex(['foo']), Error(ERROR_INPUT_PARAM_STRING));
-    t.doesNotThrow(() => hex('foo'), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.doesNotThrow(() => hex('foo'), Error(ERROR_INPUT_PARAM_STRING));
+    t.throws(() => hex(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => hex(0), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => hex({}), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => hex(['foo']), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.doesNotThrow(() => hex('foo'), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => hex('foo'), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
 });
 
 test('hex returns lowercase base16 format', (t) => {

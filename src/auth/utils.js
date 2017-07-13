@@ -1,6 +1,6 @@
 import {
-    ERROR_INPUT_PARAM_REQUIRED,
-    ERROR_INPUT_PARAM_STRING,
+    ERROR_PARAM_REQUIRED,
+    ERROR_PARAM_TYPE_IS_NOT_STRING,
 } from './consts';
 
 
@@ -11,7 +11,7 @@ import {
  * @returns {string}
  */
 export function pad(number) {
-    if (number === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
+    if (number === undefined) throw Error(ERROR_PARAM_REQUIRED);
 
     if (number < 10) {
         return `0${number}`;
@@ -27,8 +27,8 @@ export function pad(number) {
  * @returns {string}
  */
 export function hex(input) {
-    if (input === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
-    if (typeof input !== 'string') throw Error(ERROR_INPUT_PARAM_STRING);
+    if (input === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof input !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
     let hexVal;
     let i;

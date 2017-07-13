@@ -11,6 +11,8 @@ dependencies:
     - ~/.cache/yarn
 
 test:
+  pre:
+    - yarn lint
   override:
     - yarn test:
   post:

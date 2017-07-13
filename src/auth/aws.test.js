@@ -6,9 +6,9 @@ import {
 } from './aws';
 import * as utils from './utils';
 import {
-    ERROR_INPUT_PARAM_REQUIRED,
-    ERROR_INPUT_PARAM_STRING,
-    ERROR_INPUT_PARAM_BOOLEAN,
+    ERROR_PARAM_REQUIRED,
+    ERROR_PARAM_TYPE_IS_NOT_STRING,
+    ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
 } from './consts';
 
 
@@ -25,17 +25,17 @@ test('AWSURIEncode requires string input and bool encodeSlash params', (t) => {
     const stubHex = sinon.stub(utils, 'hex');
 
     t.plan(11);
-    t.throws(() => AWSURIEncode(), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.throws(() => AWSURIEncode('foo'), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.throws(() => AWSURIEncode(0, 'foo'), Error(ERROR_INPUT_PARAM_STRING));
-    t.throws(() => AWSURIEncode({}, true), Error(ERROR_INPUT_PARAM_STRING));
-    t.throws(() => AWSURIEncode(['foo'], true), Error(ERROR_INPUT_PARAM_STRING));
-    t.throws(() => AWSURIEncode('foo', 'foo'), Error(ERROR_INPUT_PARAM_BOOLEAN));
-    t.throws(() => AWSURIEncode('foo', {}), Error(ERROR_INPUT_PARAM_BOOLEAN));
-    t.throws(() => AWSURIEncode('foo', ['foo']), Error(ERROR_INPUT_PARAM_BOOLEAN));
-    t.doesNotThrow(() => AWSURIEncode('foo', true), Error(ERROR_INPUT_PARAM_REQUIRED));
-    t.doesNotThrow(() => AWSURIEncode('foo', false), Error(ERROR_INPUT_PARAM_STRING));
-    t.doesNotThrow(() => AWSURIEncode('foo', false), Error(ERROR_INPUT_PARAM_BOOLEAN));
+    t.throws(() => AWSURIEncode(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => AWSURIEncode('foo'), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => AWSURIEncode(0, 'foo'), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => AWSURIEncode({}, true), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => AWSURIEncode(['foo'], true), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => AWSURIEncode('foo', 'foo'), Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN));
+    t.throws(() => AWSURIEncode('foo', {}), Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN));
+    t.throws(() => AWSURIEncode('foo', ['foo']), Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN));
+    t.doesNotThrow(() => AWSURIEncode('foo', true), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => AWSURIEncode('foo', false), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.doesNotThrow(() => AWSURIEncode('foo', false), Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN));
 
     stubHex.restore();
 });
@@ -54,7 +54,7 @@ test('AWSURIEncode doesn\'t encode unreserved chars', (t) => {
 });
 
 test('AWSURIEncode does hex encode, %-prepend and uppercase reserved chars', (t) => {
-    const stubHex = sinon.stub(utils, 'hex', x => 'fake' + x);
+    const stubHex = sinon.stub(utils, 'hex', x => `fake${x}`);
 
     t.plan(4);
     t.equal(AWSURIEncode(',', false), '%FAKE,');
@@ -72,7 +72,7 @@ test('AWSURIEncode encodes forward slash chars correctly', (t) => {
 });
 
 test('AWSURIEncode encodes space chars and sequences correctly', (t) => {
-    const stubHex = sinon.stub(utils, 'hex', x => '|' + x + '|');
+    const stubHex = sinon.stub(utils, 'hex', x => `|${x}|`);
 
     t.plan(3);
     t.equal(AWSURIEncode(' ', false), '%20');

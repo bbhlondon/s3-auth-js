@@ -5,9 +5,9 @@ import {
     hmacSha256,
 } from './hash';
 import {
-    ERROR_INPUT_PARAM_REQUIRED,
-    ERROR_INPUT_PARAM_STRING,
-    ERROR_INPUT_PARAM_BOOLEAN,
+    ERROR_PARAM_REQUIRED,
+    ERROR_PARAM_TYPE_IS_NOT_STRING,
+    ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
 } from './consts';
 
 
