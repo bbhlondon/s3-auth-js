@@ -11,5 +11,9 @@ dependencies:
     - ~/.cache/yarn
 
 test:
+  pre:
+    - yarn lint
   override:
-    - yarn test
+    - yarn test:
+  post:
+    - bash <(curl -s https://codecov.io/bash)
