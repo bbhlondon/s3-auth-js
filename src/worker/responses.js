@@ -2,7 +2,6 @@ import Logger from '../logger';
 import { GATEWAY_URL, INDEX_URL } from './config';
 
 
-
 export function respondWithRedirectToGateway(event) {
     event.respondWith(
         fetch(new Request(GATEWAY_URL)).then((response) => {

@@ -1,21 +1,36 @@
-import { GATEWAY_URL, BYPASSED_URLS } from './config';
+import { ERROR_PARAM_REQUIRED } from './consts';
 
 /**
  * Is request whitelisted
  *
- * @param {any} request
+ * @param {Request} request
  * @returns {Boolean}
  */
-export function isBypassed(request) {
-    return BYPASSED_URLS.find(item => request.url.indexOf(item) !== -1);
+export function isBypassed(bypassedUrls, request) {
+    return bypassedUrls.find(item => request.url.indexOf(item) !== -1) !== undefined;
 }
 
 /**
  * Is Gateway request
  *
- * @param {any} request
+ * @param {Request} request
  * @returns {Boolean}
  */
-export function isGateway(request) {
-    return request.url.indexOf(GATEWAY_URL) !== -1;
+export function isGateway(gatewayUrl, request) {
+    return request.url.indexOf(gatewayUrl) !== -1;
+}
+
+
+/**
+ * Make message
+ * 
+ * @export
+ * @param {String} type 
+ * @param {any} [payload={}] 
+ * @returns 
+ */
+export function makeMessage(type, payload = {}) {
+    if (!type) throw Error(ERROR_PARAM_REQUIRED);
+
+    return { type, payload };
 }

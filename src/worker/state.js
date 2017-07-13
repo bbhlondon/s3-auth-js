@@ -1,4 +1,4 @@
-import { getToken, setToken } from './storage';
+import { getToken, setToken, deleteToken } from './storage';
 
 // Token
 let token = null;
@@ -9,7 +9,7 @@ let token = null;
  * @returns {Boolean}
  */
 export function isAuthorized() {
-    return token;
+    return !!token;
 }
 
 /**
@@ -34,4 +34,16 @@ export function setCredentials(newValue) {
 export function getCredentials() {
     if (token) { return Promise.resolve(token); }
     return getToken();
+}
+
+/**
+ * Delete credentials
+ *
+ * @export
+ * @returns {Promise}
+ */
+export function deleteCredentials() {
+    token = null;
+
+    return deleteToken();
 }

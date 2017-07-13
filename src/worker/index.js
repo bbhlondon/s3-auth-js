@@ -1,4 +1,7 @@
-import { handleActivate, handleMessage, handleFetch } from './handlers';
+import { handleInstall, handleActivate, handleMessage, handleFetch } from './handlers';
+
+// Install
+self.addEventListener('install', event => handleInstall(event));
 
 // Activate
 self.addEventListener('activate', event => handleActivate(event));
