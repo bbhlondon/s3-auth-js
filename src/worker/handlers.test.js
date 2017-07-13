@@ -17,7 +17,7 @@ test('makeMessgae returns correct message object', (t) => {
     const expected = { type: 'test', payload: { test: 'test' } };
     const msg = _.makeMessage('test', { test: 'test' });
 
-    t.looseEqual(expected, msg);
+    t.deepLooseEqual(expected, msg);
 });
 
 test('isBypassed filters urls correctly', (t) => {

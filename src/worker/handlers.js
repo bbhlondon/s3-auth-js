@@ -28,7 +28,7 @@ export function handleActivate(event) {
 
     event.waitUntil(
         getCredentials().then((token) => {
-            Logger.log(`[Service worker] Activated; Authrozied: ${isAuthorized()}`);
+            Logger.log(`[Service worker] Activated; isAuthorized: ${isAuthorized()}`);
         }),
     );
 }
