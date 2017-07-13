@@ -11,8 +11,8 @@
   "license": "BSD-3-Clause",
   "dependencies": {},
   "scripts": {
-    "pretest": "NODE_ENV=ci",
-    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run | tap-dot",
+    "lint": "eslint ./src/*",
+    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run",
     "build": "rollup -c --environment ENV:production rollup.config.client.js && rollup -c --environment ENV:production rollup.config.worker.js",
     "start": "concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
   },
