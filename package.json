@@ -12,7 +12,7 @@
   "dependencies": {},
   "scripts": {
     "lint": "eslint ./src/*",
-    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run | tap-dot",
+    "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run",
     "build-html": "mustache ./src/client/gateway.json ./src/client/gateway.hbs > ./dist/gateway.html",
     "build": "yarn run build-html && rollup -c rollup.config.client.js --environment ENV:production && rollup -c  rollup.config.worker.js --environment ENV:production",
     "start": "yarn run build-html && concurrently \"rollup -w -c rollup.config.client.js\" \"rollup -w -c rollup.config.worker.js\" \"browser-sync start --server --serveStatic dist\""
@@ -48,6 +48,7 @@
     "sinon": "^2.3.5",
     "tap-dot": "^1.0.5",
     "tape": "^4.6.3",
-    "tape-run": "^3.0.0"
+    "tape-run": "^3.0.0",
+    "wrapple": "^0.4.0"
   }
 }

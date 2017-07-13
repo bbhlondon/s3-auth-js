@@ -1,5 +1,6 @@
 import Logger from '../logger';
 import { ERROR_SERVICE_WORKER_NOT_SUPPORTED, ERROR_SERVICE_WORKER_ALREADY_EXISTS, ERROR_SERVICE_WORKER_REGISTRATION_FAILED } from '../consts';
+import { supportsServiceWorker, hasServiceWorker } from './_register';
 
 
 /**
@@ -10,15 +11,15 @@ import { ERROR_SERVICE_WORKER_NOT_SUPPORTED, ERROR_SERVICE_WORKER_ALREADY_EXISTS
  */
 export default function registerServiceWorker(swPath) {
     return new Promise((resolve, reject) => {
-        if (!('serviceWorker' in navigator)) {
+        if (!supportsServiceWorker()) {
             Logger.log('[Page] This browser doesn\'t support service workers');
             return reject(ERROR_SERVICE_WORKER_NOT_SUPPORTED);
         }
 
         if (navigator.serviceWorker.controller) {
-            if (navigator.serviceWorker.controller.scriptURL.indexOf(swPath) >= 0) {
+            if (hasServiceWorker(swPath)) {
                 Logger.log('[Client] The service worker is already active');
-                return resolve();
+                return resolve(true);
             }
             Logger.error(`[Client] The page already has another service worker: ${navigator.serviceWorker.controller.scriptURL}`);
             return reject(ERROR_SERVICE_WORKER_ALREADY_EXISTS);
@@ -29,7 +30,7 @@ export default function registerServiceWorker(swPath) {
                 // Registration was successful
                 Logger.log(`[Client] ServiceWorker registration successful with scope: ${registration.scope}`);
 
-                return resolve();
+                return resolve(true);
             }, (err) => {
                 // registration failed :(
                 Logger.log(`[Client] ServiceWorker registration failed: ${err}`);
