@@ -11,27 +11,27 @@ import {
 } from './consts';
 
 
-test('sha256Hash requires string input', (t) => {
+test.skip('sha256Hash requires string input', (t) => {
     t.fail('still to be written');
     t.end();
 });
 
-test('sha256Hash returns valid hash string', (t) => {
+test.skip('sha256Hash returns valid hash string', (t) => {
     t.fail('still to be written');
     t.end();
 });
 
-test('hmacSha256 requires key', (t) => {
+test.skip('hmacSha256 requires key', (t) => {
     t.fail('still to be written');
     t.end();
 });
 
-test('hmacSha256 requires string input', (t) => {
+test.skip('hmacSha256 requires string input', (t) => {
     t.fail('still to be written');
     t.end();
 });
 
-test('hmacSha256 returns valid hashed output', (t) => {
+test.skip('hmacSha256 returns valid hashed output', (t) => {
     t.fail('still to be written');
     t.end();
 });
