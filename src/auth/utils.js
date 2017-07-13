@@ -14,7 +14,7 @@ export function pad(number) {
     if (number === undefined) throw Error(ERROR_INPUT_PARAM_REQUIRED);
 
     if (number < 10) {
-        return '0' + number;
+        return `0${number}`;
     }
     return number;
 }
