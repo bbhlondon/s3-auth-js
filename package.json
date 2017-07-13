@@ -9,12 +9,9 @@
     "Marcel Kornblum <marcel.kornblum@bbh.co.uk>"
   ],
   "license": "BSD-3-Clause",
-  "dependencies": {
-    "babel-plugin-rewire-exports": "^0.2.0",
-    "idb-keyval": "^2.3.0"
-  },
+  "dependencies": {},
   "scripts": {
-    "pretest": "NODE_ENV=ci",
+    "lint": "eslint ./src/*",
     "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run",
     "build-html": "mustache ./src/client/gateway.json ./src/client/gateway.hbs > ./dist/gateway.html",
     "build": "yarn run build-html && rollup -c rollup.config.client.js --environment ENV:production && rollup -c  rollup.config.worker.js --environment ENV:production",
@@ -49,6 +46,7 @@
     "rollup-plugin-replace": "^1.1.1",
     "rollup-watch": "^4.0.0",
     "sinon": "^2.3.5",
+    "tap-dot": "^1.0.5",
     "tape": "^4.6.3",
     "tape-run": "^3.0.0"
   }

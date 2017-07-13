@@ -1,38 +1,21 @@
 import Logger from '../logger';
-import { getToken, setToken } from './storage';
-import { GATEWAY_URL, INDEX_URL, BYPASSED_URLS } from './config';
+import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
+import { isBypassed, isGateway, makeMessage } from './_handlers';
+import { isAuthorized, setCredentials, getCredentials, deleteCredentials } from './state';
+import { BYPASSED_URLS, GATEWAY_URL } from './config';
+import { MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from './consts';
 
-// Token
-let token = null;
-
-/**
- * Is User authorized
- *
- * @returns {Boolean}
- */
-function isAuthorized() {
-    return token;
-}
 
 /**
- * Is request whitelisted
- *
- * @param {any} request
- * @returns {Boolean}
+ * Handle Install Event
+ * 
+ * @export
+ * @param {any} event 
  */
-function isBypassed(request) {
-    return BYPASSED_URLS.find(item => request.url.indexOf(item) !== -1);
+export function handleInstall(event) {
+    Logger.log('[Service worker] Installing');
 }
 
-/**
- * Is Gateway request
- *
- * @param {any} request
- * @returns {Boolean}
- */
-function isGateway(request) {
-    return request.url.indexOf(GATEWAY_URL) !== -1;
-}
 
 /**
  * Handles Activate Event
@@ -41,10 +24,11 @@ function isGateway(request) {
  * @param {any} event
  */
 export function handleActivate(event) {
+    self.clients.claim();
+
     event.waitUntil(
-        getToken().then((storedToken) => {
-            token = storedToken;
-            Logger.log(`[Service worker] Activated with token: ${token}`);
+        getCredentials().then((token) => {
+            Logger.log(`[Service worker] Activated; isAuthorized: ${isAuthorized()}`);
         }),
     );
 }
@@ -63,10 +47,14 @@ export function handleMessage(event) {
         const { type, payload } = event.data;
 
         switch (type) {
-        case 'SET_TOKEN':
-            token = payload.token;
-            setToken(token).then(() => {
-                client.postMessage({ type: 'TOKEN_SET' });
+        case MESSAGE_SET_CREDENTIALS:
+            setCredentials(payload.token).then(() => {
+                client.postMessage(makeMessage(MESSAGE_CREDENTIALS_SET));
+            });
+            break;
+        case MESSAGE_DELETE_CREDENTIALS:
+            deleteCredentials().then(() => {
+                client.postMessage(makeMessage(MESSAGE_CREDENTIALS_DELETED));
             });
             break;
         default:
@@ -85,28 +73,16 @@ export function handleMessage(event) {
 export function handleFetch(event) {
     Logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 
-    if (isAuthorized() || isBypassed(event.request)) {
-        if (isGateway(event.request)) {
-            event.respondWith(
-                fetch(new Request(INDEX_URL)).then((response) => {
-                    Logger.log('[Service worker] Redirect to index');
-                    return response;
-                }),
-            );
+    if (isAuthorized()) {
+        if (isGateway(GATEWAY_URL, event.request)) {
+            repondWithRedirectToIndex(event);
         } else {
-            event.respondWith(
-                fetch(new Request(event.request)).then((response) => {
-                    Logger.log('[Service worker] Response received');
-                    return response;
-                }),
-            );
+            respondWithRequestedItem(event);
         }
+    } else if (isBypassed(BYPASSED_URLS, event.request)) {
+        respondWithRequestedItem(event);
     } else {
-        event.respondWith(
-            fetch(new Request(GATEWAY_URL)).then((response) => {
-                Logger.log('[Service worker] Redirect to gateway');
-                return response;
-            }),
-        );
+        respondWithRedirectToGateway(event);
     }
 }
+
