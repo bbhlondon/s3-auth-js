@@ -1,15 +1,19 @@
 import test from 'tape';
 import sinon from 'sinon';
 import {
-    AWSURIEncode,
-    getAWSTimestamp,
-} from './aws';
-import * as utils from './utils';
-import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
 } from '../consts';
+import * as utils from './utils';
+import {
+    AWSURIEncode,
+    getAWSTimestamp,
+} from './_aws';
+import {
+    createCanonicalRequest,
+    createStringToSign,
+} from './aws';
 
 
 test('getAWSTimestamp returns right format', (t) => {
@@ -80,4 +84,14 @@ test('AWSURIEncode encodes space chars and sequences correctly', (t) => {
     t.equal(AWSURIEncode('Hello World,/foo', true), 'Hello%20World%|,|%2Ffoo');
 
     stubHex.restore();
+});
+
+test('createCanonicalRequest requires url as string and method const inputs', (t) => {
+    t.fail('not implemented');
+    t.end();
+});
+
+test('createStringToSign requires url as string and method const inputs', (t) => {
+    t.fail('not implemented');
+    t.end();
 });
