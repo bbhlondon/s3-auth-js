@@ -1,17 +1,18 @@
+/* eslint-disable no-restricted-syntax */
+import sha256 from 'crypto-js/sha256';
 import {
+    AUTH_METHOD,
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
     ERROR_PARAM_TYPE_IS_NOT_OBJECT,
+    ERROR_PARAM_TYPE_IS_NOT_ARRAY,
+    ERROR_REQUIRED_HEADER_NOT_FOUND,
 } from '../consts';
 import {
     pad,
     hex,
 } from './utils';
-// import {
-//     sha256Hash,
-//     hmacSha256,
-// } from './hash';
 
 /**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
@@ -71,7 +72,7 @@ export function AWSURIEncode(input, encodeSlash) {
  */
 export function encodeQueryStringParameters(params) {
     if (params === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (typeof input !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (typeof params !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
 
     Object.keys(params).forEach((key) => {
         params.set(AWSURIEncode(key), AWSURIEncode(params[key]));
@@ -79,4 +80,117 @@ export function encodeQueryStringParameters(params) {
     });
 
     return params;
+}
+
+/**
+ * returns the Text BODY of the requrest, resolving promised if need be
+ *
+ * @export
+ * @returns {string}
+ */
+export function getRequestBody(request) {
+    let body = '';
+    if (request.bodyUsed) {
+        request.text().then((b) => { body = b; });
+    }
+    return body;
+}
+
+/**
+ * verify that the required headers are present, ingesting an array and returning a boolean
+ *
+ * @export
+ * @returns {boolean}
+ */
+export function verifyHeaderRequirements(headers) {
+    if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+
+    return headers.some((el, idx) => idx.toLowerCase() === 'host');
+}
+
+/**
+ * ensure the right headers are present and calculate signed ones a needed.
+ * Takes a URL.headers object and returns an array of objects
+ *
+ * @export
+ * @returns {array}
+ */
+export function processHeaders(request, body) {
+    if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+
+    const headers = {};
+    for (const entry of request.headers.entries()) {
+        headers.push({
+            name: entry[0],
+            value: entry[1],
+        });
+    }
+
+    if (!exports.verifyHeaderRequirements(headers)) {
+        throw Error(ERROR_REQUIRED_HEADER_NOT_FOUND);
+    }
+
+    if (AUTH_METHOD === 'AWS4_SIGNED_HEADERS') {
+        headers.push({
+            name: 'x-amz-content-sha256',
+            value: sha256(body),
+        });
+    }
+
+    // sort the headers alphabetically by header name
+    headers.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        if (nameA < nameB) {
+            return -1;
+        }
+        if (nameA > nameB) {
+            return 1;
+        }
+        return 0;
+    });
+
+    return headers;
+}
+
+/**
+ * ensure the headers are all formatted in the way AWS insists on,
+ * ingesting a URL.headers object and returning a string
+ *
+ * @export
+ * @returns {object}
+ */
+export function formatCanonicalHeaders(headers) {
+    if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+
+    let response = '';
+    headers.forEach((entry) => {
+        response += `${entry.name.toLowerCase()}:$entry.value.trim()}\n`;
+    });
+
+    return response;
+}
+
+/**
+ * ensure the headers are all formatted in the way AWS insists on,
+ * ingesting a URL.headers object and returning a string
+ *
+ * @export
+ * @returns {object}
+ */
+export function formatSignedHeaders(headers) {
+    if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+
+    let response = '';
+    headers.sort();
+
+    headers.forEach((entry) => {
+        response += `${entry.name.toLowerCase()};`;
+    });
+
+    return response.slice(0, -1);
 }

@@ -9,7 +9,9 @@
     "Marcel Kornblum <marcel.kornblum@bbh.co.uk>"
   ],
   "license": "BSD-3-Clause",
-  "dependencies": {},
+  "dependencies": {
+    "crypto-js": "^3.1.9-1"
+  },
   "scripts": {
     "lint": "eslint ./src/*",
     "test": "BABEL_ENV=test browserify ./src/**/*.test.js -t [ babelify ] | tape-run",
