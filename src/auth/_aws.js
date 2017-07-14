@@ -8,6 +8,7 @@ import {
     ERROR_PARAM_TYPE_IS_NOT_OBJECT,
     ERROR_PARAM_TYPE_IS_NOT_ARRAY,
     ERROR_REQUIRED_HEADER_NOT_FOUND,
+    ERROR_PROPERTY_NOT_FOUND,
 } from '../consts';
 import {
     pad,
@@ -73,9 +74,11 @@ export function AWSURIEncode(input, encodeSlash) {
 export function encodeQueryStringParameters(params) {
     if (params === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof params !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (!('set' in params)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!('delete' in params)) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
     Object.keys(params).forEach((key) => {
-        params.set(AWSURIEncode(key), AWSURIEncode(params[key]));
+        params.set(exports.AWSURIEncode(key), exports.AWSURIEncode(params[key]));
         params.delete(key);
     });
 
@@ -89,6 +92,11 @@ export function encodeQueryStringParameters(params) {
  * @returns {string}
  */
 export function getRequestBody(request) {
+    if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (!('bodyUsed' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!('text' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+
     let body = '';
     if (request.bodyUsed) {
         request.text().then((b) => { body = b; });
@@ -106,7 +114,7 @@ export function verifyHeaderRequirements(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
 
-    return headers.some((el, idx) => idx.toLowerCase() === 'host');
+    return headers.some(el => el.name.toLowerCase() === 'host');
 }
 
 /**
@@ -118,7 +126,10 @@ export function verifyHeaderRequirements(headers) {
  */
 export function processHeaders(request, body) {
     if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (body === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (typeof body !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+    if (!('entries' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
     const headers = {};
     for (const entry of request.headers.entries()) {
@@ -186,7 +197,6 @@ export function formatSignedHeaders(headers) {
     if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
 
     let response = '';
-    headers.sort();
 
     headers.forEach((entry) => {
         response += `${entry.name.toLowerCase()};`;
