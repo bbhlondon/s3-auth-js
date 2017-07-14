@@ -1,6 +1,6 @@
 import Logger from '../logger';
 import registerServiceWorker from './register';
-import initializeForm from './form';
+import { initializeForm, displayMessage } from './form';
 import sendMessage from './messaging';
 import { makeMessage } from '../utils';
 import { MESSAGE_SET_CREDENTIALS } from '../consts';
@@ -13,14 +13,14 @@ import { MESSAGE_SET_CREDENTIALS } from '../consts';
  */
 function initialize(swPath) {
     registerServiceWorker(swPath).then(() => {
-        initializeForm(document.querySelector('#form'), () => {
+        initializeForm(document.querySelector('#form'), ({ name, password }) => {
             Logger.log('Submit form');
-            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { token: 'token' })).then(() => {
+            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { name, password, token: 'token' })).then(() => {
                 Logger.log('ACK');
             });
         });
     }, (error) => {
-        document.querySelector('#message').textContent = error;
+        displayMessage(error);
     });
 }
 
