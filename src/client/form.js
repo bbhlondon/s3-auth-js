@@ -12,7 +12,6 @@ export function initializeForm($form, onSubmit) {
 }
 
 export function displayMessage(message) {
-
     document.querySelector('#message').classList.add('active');
     document.querySelector('#message__text').textContent = message;
 }

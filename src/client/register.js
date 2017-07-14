@@ -38,5 +38,7 @@ export default function registerServiceWorker(swPath) {
                 return reject(ERROR_SERVICE_WORKER_REGISTRATION_FAILED);
             });
         });
+
+        return null;
     });
 }

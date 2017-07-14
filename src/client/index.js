@@ -2,7 +2,7 @@ import Logger from '../logger';
 import registerServiceWorker from './register';
 import { initializeForm, displayMessage } from './form';
 import sendMessage from './messaging';
-import { makeMessage } from '../utils';
+import makeMessage from '../utils';
 import { MESSAGE_SET_CREDENTIALS } from '../consts';
 
 

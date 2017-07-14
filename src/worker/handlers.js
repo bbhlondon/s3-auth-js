@@ -1,7 +1,7 @@
 import Logger from '../logger';
 import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
 import { isBypassed, isGateway } from './_handlers';
-import { makeMessage } from '../utils';
+import makeMessage from '../utils';
 import { isAuthorized, setCredentials, getCredentials, deleteCredentials } from './state';
 import { BYPASSED_URLS, GATEWAY_URL, MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from '../consts';
 
@@ -13,7 +13,7 @@ import { BYPASSED_URLS, GATEWAY_URL, MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIAL
  * @param {any} event 
  */
 export function handleInstall(event) {
-    Logger.log('[Service worker] Installing');
+    Logger.log(`[Service worker] Installing: ${event}`);
 }
 
 
