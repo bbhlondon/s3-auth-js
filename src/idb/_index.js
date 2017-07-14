@@ -1,4 +1,4 @@
-import { ERROR_INVALID_OPERATION } from './consts';
+import { ERROR_INVALID_OPERATION, ERROR_TRANSACTION_UNDEFINED, ERROR_INCORRECT_TRANSACTION_TYPE, ERROR_OPERATION_UNDEFINED } from './consts';
 
 let idb;
 
@@ -43,10 +43,10 @@ export function createDb() {
  */
 export function withStore(type, operation) {
     try {
-        if (!type) throw Error('[IDB] Transaction type undefined');
-        if (typeof type !== 'string') throw Error('[IDB] Transaction type must be a string');
+        if (!type) throw Error(ERROR_TRANSACTION_UNDEFINED);
+        if (typeof type !== 'string') throw Error(ERROR_INCORRECT_TRANSACTION_TYPE);
 
-        if (!operation) throw Error('[IDB] Operation undefined');
+        if (!operation) throw Error(ERROR_OPERATION_UNDEFINED);
 
         return createDb().then(db => new Promise((resolve, reject) => {
             const transaction = db.transaction(STORE_NAME, type);

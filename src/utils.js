@@ -7,7 +7,7 @@ import { ERROR_PARAM_REQUIRED } from './consts';
  * @param {any} [payload={}] 
  * @returns 
  */
-export function makeMessage(type, payload = {}) {
+export default function makeMessage(type, payload = {}) {
     if (!type) throw Error(ERROR_PARAM_REQUIRED);
 
     return { type, payload };
