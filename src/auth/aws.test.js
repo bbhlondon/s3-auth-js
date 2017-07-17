@@ -98,12 +98,10 @@ test('encodeQueryStringParameters requires a URL.searchParams object', (t) => {
     t.throws(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PROPERTY_NOT_FOUND));
     params = new URLSearchParams('');
     t.doesNotThrow(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PARAM_REQUIRED));
-    t.doesNotThrow(() => {
-        _.encodeQueryStringParameters(params);
-    }, Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.doesNotThrow(() => {
-        _.encodeQueryStringParameters(params);
-    }, Error(consts.ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(
+        () => _.encodeQueryStringParameters(params), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(
+        () => _.encodeQueryStringParameters(params), Error(consts.ERROR_PROPERTY_NOT_FOUND));
 
     t.end();
     stubEncode.restore();
@@ -165,9 +163,8 @@ test('verifyHeaderRequirements requires array input', (t) => {
     t.throws(() => _.verifyHeaderRequirements(345), Error(consts.ERROR_PARAM_TYPE_IS_NOT_ARRAY));
     t.throws(() => _.verifyHeaderRequirements({}), Error(consts.ERROR_PARAM_TYPE_IS_NOT_ARRAY));
     t.doesNotThrow(() => _.verifyHeaderRequirements([]), Error(consts.ERROR_PARAM_REQUIRED));
-    t.doesNotThrow(() => {
-        _.verifyHeaderRequirements([]);
-    }, Error(consts.ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.doesNotThrow(
+        () => _.verifyHeaderRequirements([]), Error(consts.ERROR_PARAM_TYPE_IS_NOT_ARRAY));
     t.end();
 });
 
