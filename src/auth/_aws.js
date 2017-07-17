@@ -143,7 +143,7 @@ export function verifyHeaderRequirements(headers) {
  * @export
  * @returns {array}
  */
-export function processHeaders(request, body) {
+export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS') {
     if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (body === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
@@ -163,7 +163,7 @@ export function processHeaders(request, body) {
         throw Error(ERROR_REQUIRED_HEADER_NOT_FOUND);
     }
 
-    if (AUTH_METHOD === 'AWS4_SIGNED_HEADERS') {
+    if (authMethod === 'AWS4_SIGNED_HEADERS') {
         headers.push({
             name: 'x-amz-content-sha256',
             value: sha256(body).toString(),

@@ -1,0 +1,5 @@
+{
+    "GATEWAY_URL": "/gateway.html",
+    "INDEX_URL": "/test.html",
+    "AUTH_METHOD": "AWS4_SIGNED_HEADERS"
+}
