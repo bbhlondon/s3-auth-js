@@ -21,7 +21,7 @@ import {
  * HTTPMethod, CanonicalURI, CanonicalQueryString, CanonicalHeaders, SignedHeaders, HashedPayload
  *
  * @export
- * @returns {object}
+ * @returns {string}
  */
 export function createCanonicalRequest(request) {
     if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -36,13 +36,13 @@ export function createCanonicalRequest(request) {
     const CanonicalRequestObj = {
         HTTPMethod: request.method,
         CanonicalURI: url.pathname,
-        CanonicalQueryString: _.encodeQueryStringParameters(url.searchParams).toString(),
+        CanonicalQueryString: _.encodeQueryStringParameters(url.searchParams),
         CanonicalHeaders: _.formatCanonicalHeaders(headers),
         SignedHeaders: _.formatSignedHeaders(headers),
         HashedPayload: hex(sha256(body)),
     };
 
-    return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.Headers}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
+    return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.CanonicalHeaders}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
 }
 
 export function createStringToSign() {

@@ -9,6 +9,7 @@ import {
     ERROR_PARAM_TYPE_IS_NOT_ARRAY,
     ERROR_REQUIRED_HEADER_NOT_FOUND,
     ERROR_PROPERTY_NOT_FOUND,
+    ERROR_UNSUPPORTED_HTTP_VERB,
 } from '../consts';
 import {
     pad,
@@ -66,10 +67,10 @@ export function AWSURIEncode(input, encodeSlash) {
 }
 
 /**
- * URI encode each parameter from a URL.searchParams object, returning a modified object
+ * URI encode each parameter from a URL.searchParams object, returning a formatted querystring
  *
  * @export
- * @returns {object}
+ * @returns {string}
  */
 export function encodeQueryStringParameters(params) {
     if (params === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -77,12 +78,29 @@ export function encodeQueryStringParameters(params) {
     if (!('set' in params)) throw Error(ERROR_PROPERTY_NOT_FOUND);
     if (!('delete' in params)) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
-    Object.keys(params).forEach((key) => {
-        params.set(exports.AWSURIEncode(key), exports.AWSURIEncode(params[key]));
-        params.delete(key);
+    const output = [];
+    for (const p of params) {
+        output.push({
+            name: exports.AWSURIEncode(p[0]),
+            value: exports.AWSURIEncode(p[1]),
+        });
+    }
+
+    // sort the headers alphabetically by header name
+    output.sort((a, b) => {
+        if (a.name < b.name) {
+            return -1;
+        }
+        if (a.name > b.name) {
+            return 1;
+        }
+        return 0;
     });
 
-    return params;
+    let result = '';
+    output.forEach((x) => { result += `&${x.name}=${x.value}`; });
+
+    return result.slice(1);
 }
 
 /**
@@ -97,11 +115,12 @@ export function getRequestBody(request) {
     if (!('bodyUsed' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
     if (!('text' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
-    let body = '';
     if (request.bodyUsed) {
-        request.text().then((b) => { body = b; });
+        // supporting this would require dealing with promises here,
+        // which seems overkill right now as we only proxy GETs
+        throw Error(ERROR_UNSUPPORTED_HTTP_VERB);
     }
-    return body;
+    return '';
 }
 
 /**
@@ -112,9 +131,9 @@ export function getRequestBody(request) {
  */
 export function verifyHeaderRequirements(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+    if (!Array.isArray(headers)) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
 
-    return headers.some(el => el.name.toLowerCase() === 'host');
+    return headers.some(el => el.name && el.name.toLowerCase() === 'host');
 }
 
 /**
@@ -129,9 +148,10 @@ export function processHeaders(request, body) {
     if (body === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
     if (typeof body !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (!('entries' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!('headers' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!('entries' in request.headers)) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
-    const headers = {};
+    const headers = [];
     for (const entry of request.headers.entries()) {
         headers.push({
             name: entry[0],
@@ -146,7 +166,7 @@ export function processHeaders(request, body) {
     if (AUTH_METHOD === 'AWS4_SIGNED_HEADERS') {
         headers.push({
             name: 'x-amz-content-sha256',
-            value: sha256(body),
+            value: sha256(body).toString(),
         });
     }
 
@@ -175,11 +195,14 @@ export function processHeaders(request, body) {
  */
 export function formatCanonicalHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+    if (!Array.isArray(headers)) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+    if (headers.length > 0 && typeof headers[0] !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (headers.length > 0 && !('name' in headers[0])) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (headers.length > 0 && !('value' in headers[0])) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
     let response = '';
     headers.forEach((entry) => {
-        response += `${entry.name.toLowerCase()}:$entry.value.trim()}\n`;
+        response += `${entry.name.toLowerCase()}:${entry.value.trim()}\n`;
     });
 
     return response;
@@ -194,7 +217,9 @@ export function formatCanonicalHeaders(headers) {
  */
 export function formatSignedHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (!headers.isArray) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+    if (!Array.isArray(headers)) throw Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY);
+    if (headers.length > 0 && typeof headers[0] !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (headers.length > 0 && !('name' in headers[0])) throw Error(ERROR_PROPERTY_NOT_FOUND);
 
     let response = '';
 

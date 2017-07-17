@@ -1,11 +1,19 @@
+import sha256 from 'crypto-js/sha256';
 import test from 'tape';
 import sinon from 'sinon';
 import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
+    ERROR_PARAM_TYPE_IS_NOT_OBJECT,
+    ERROR_PARAM_TYPE_IS_NOT_ARRAY,
+    ERROR_PARAM_IS_NOT_ALLOWED,
+    ERROR_PROPERTY_NOT_FOUND,
+    ERROR_UNSUPPORTED_HTTP_VERB,
+    ERROR_REQUIRED_HEADER_NOT_FOUND,
 } from '../consts';
 import * as utils from './utils';
+import * as consts from '../consts';
 import * as _ from './_aws';
 import {
     createCanonicalRequest,
@@ -87,82 +95,297 @@ test('_.AWSURIEncode encodes space chars and sequences correctly', (t) => {
 });
 
 test('encodeQueryStringParameters requires a URL.searchParams object', (t) => {
-    t.fail('not implemented');
+    const stubEncode = sinon.stub(_, 'AWSURIEncode');
+
+    t.throws(() => _.encodeQueryStringParameters(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.encodeQueryStringParameters('foo'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.encodeQueryStringParameters(34), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.encodeQueryStringParameters([]), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    let params = {};
+    t.throws(() => _.encodeQueryStringParameters(params), Error(ERROR_PROPERTY_NOT_FOUND));
+    params.foo = 'bar';
+    t.throws(() => _.encodeQueryStringParameters(params), Error(ERROR_PROPERTY_NOT_FOUND));
+    params.set = () => {};
+    t.throws(() => _.encodeQueryStringParameters(params), Error(ERROR_PROPERTY_NOT_FOUND));
+    params = new URLSearchParams('');
+    t.doesNotThrow(() => _.encodeQueryStringParameters(params), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => {
+        _.encodeQueryStringParameters(params);
+    }, Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => _.encodeQueryStringParameters(params), Error(ERROR_PROPERTY_NOT_FOUND));
+
     t.end();
+    stubEncode.restore();
 });
 
-test('encodeQueryStringParameters encodes all keys and values', (t) => {
-    t.fail('not implemented');
-    t.end();
-});
+test('encodeQueryStringParameters encodes and alphabetises all keys and values and returns a string', (t) => {
+    const fakeEncode = x => `|${x}|`;
+    const stubEncode = sinon.stub(_, 'AWSURIEncode').callsFake(fakeEncode);
 
-test('encodeQueryStringParameters returns the same obj as passed in', (t) => {
-    t.fail('not implemented');
+    t.equal(_.encodeQueryStringParameters(new URLSearchParams('')), '');
+    t.equal(_.encodeQueryStringParameters(new URLSearchParams('foo=bar')), '|foo|=|bar|');
+    t.equal(_.encodeQueryStringParameters(new URLSearchParams('foo=bar&baz=bag')), '|baz|=|bag|&|foo|=|bar|');
+    t.equal(_.encodeQueryStringParameters(new URLSearchParams('z=foo&y=bar&a=baz')), '|a|=|baz|&|y|=|bar|&|z|=|foo|');
+
     t.end();
+    stubEncode.restore();
 });
 
 test('getRequestBody requires a Request object to be passed in', (t) => {
-    t.fail('not implemented');
+
+    t.throws(() => _.getRequestBody(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.getRequestBody('foo'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.getRequestBody(34), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.getRequestBody([]), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    const request = {};
+    t.throws(() => _.getRequestBody(request), Error(ERROR_PROPERTY_NOT_FOUND));
+    request.foo = 'bar';
+    t.throws(() => _.getRequestBody(request), Error(ERROR_PROPERTY_NOT_FOUND));
+    request.bodyUsed = false;
+    t.throws(() => _.getRequestBody(request), Error(ERROR_PROPERTY_NOT_FOUND));
+    request.text = () => {};
+    t.doesNotThrow(() => _.getRequestBody(request), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => _.getRequestBody(request), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => _.getRequestBody(request), Error(ERROR_PROPERTY_NOT_FOUND));
     t.end();
 });
 
-test('getRequestBody handles promise resolution if body exists', (t) => {
-    t.fail('not implemented');
+test('getRequestBody handles throws error if body exists', (t) => {
+    const request = {
+        bodyUsed: true,
+        text: 'foo',
+    };
+    t.throws(() => _.getRequestBody(request), Error(ERROR_UNSUPPORTED_HTTP_VERB));
     t.end();
 });
 
 test('getRequestBody returns empty string for no body', (t) => {
-    t.fail('not implemented');
+    const request = {
+        bodyUsed: false,
+        text: 'foo',
+    };
+    t.equal(_.getRequestBody(request), '');
     t.end();
 });
 
-test('verifyHeaderRequirements requires array of objects', (t) => {
-    t.fail('not implemented');
+test('verifyHeaderRequirements requires array input', (t) => {
+    t.throws(() => _.verifyHeaderRequirements(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.verifyHeaderRequirements(''), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.verifyHeaderRequirements('foo'), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.verifyHeaderRequirements(345), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.verifyHeaderRequirements({}), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.doesNotThrow(() => _.verifyHeaderRequirements([]), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => _.verifyHeaderRequirements([]), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
     t.end();
 });
 
 test('verifyHeaderRequirements requires at least one HOST header', (t) => {
-    t.fail('not implemented');
+    t.notOk(_.verifyHeaderRequirements([]));
+    t.notOk(_.verifyHeaderRequirements(['foo']));
+    t.notOk(_.verifyHeaderRequirements(['foo', 'bar']));
+    t.notOk(_.verifyHeaderRequirements([{
+        foo: 'bar',
+    }]));
+    t.notOk(_.verifyHeaderRequirements([{
+        name: 'foo',
+        value: 'bar',
+    }]));
+    t.notOk(_.verifyHeaderRequirements([{
+        name: 'foo',
+        value: 'bar',
+    }, {
+        name: 'baz',
+        value: 'bag',
+    }]));
+    t.ok(_.verifyHeaderRequirements([{
+        name: 'host',
+    }]));
+    t.ok(_.verifyHeaderRequirements([{
+        name: 'host',
+        value: 'bar',
+    }, {
+        name: 'baz',
+        value: 'bag',
+    }]));
+    t.ok(_.verifyHeaderRequirements([{
+        name: 'baz',
+        value: 'bag',
+    }, {
+        name: 'HOST',
+        value: 'bar',
+    }]));
     t.end();
 });
 
 test('processHeaders requires a Request object and a body string to be passed in', (t) => {
-    t.fail('not implemented');
+    t.throws(() => _.processHeaders(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.processHeaders('foo'), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.processHeaders('foo', 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.processHeaders([], 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.processHeaders(99, 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.processHeaders('foo', 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.processHeaders({}, {}), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => _.processHeaders({}, 546), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => _.processHeaders({}, ['bar']), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.throws(() => _.processHeaders({}, 'bar'), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.throws(() => _.processHeaders({ foo: '' }, 'bar'), Error(ERROR_PROPERTY_NOT_FOUND));
+    const req = {
+        headers: {
+            entries: () => ['foo', 'bar'],
+        },
+    };
+    const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
+    t.doesNotThrow(() => _.processHeaders(req, 'bar'), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => _.processHeaders(req, 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => _.processHeaders(req, 'bar'), Error(ERROR_PARAM_TYPE_IS_NOT_STRING));
+    t.doesNotThrow(() => _.processHeaders(req, 'bar'), Error(ERROR_PROPERTY_NOT_FOUND));
     t.end();
+    stubVerify.restore();
 });
 
 test('processHeaders verifies headers', (t) => {
-    t.fail('not implemented');
-    t.end();
-});
+    const h = new Headers();
+    h.append('foo', 'bar');
+    const req = { headers: h };
+    const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(false);
 
-test('processHeaders adds content header for AWS4/SHA256', (t) => {
-    t.fail('not implemented');
+    t.throws(() => _.processHeaders(req, 'bar'), Error(ERROR_REQUIRED_HEADER_NOT_FOUND));
+    t.ok(stubVerify.calledOnce);
+
+    stubVerify.reset();
+    stubVerify.returns(true);
+
+    t.doesNotThrow(() => _.processHeaders(req, 'bar'), Error(ERROR_REQUIRED_HEADER_NOT_FOUND));
+    t.ok(stubVerify.calledOnce);
+
     t.end();
+    stubVerify.restore();
 });
 
 test('processHeaders returns array of objects with name & value keys, sorted by name', (t) => {
-    t.fail('not implemented');
+    const h = new Headers();
+    h.append('zed', 'content');
+    h.append('why', 'not');
+    h.append('foo', 'bar');
+    const req = { headers: h };
+    const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
+    consts.AUTH_METHOD = 'random'; // tested below, this keeps verification simple
+
+    const headers = _.processHeaders(req, 'foo');
+    t.ok(Array.isArray(headers));
+    t.equal(headers.length, 3);
+    t.deepLooseEqual(headers[0], {
+        name: 'foo',
+        value: 'bar',
+    });
+    t.deepLooseEqual(headers[1], {
+        name: 'why',
+        value: 'not',
+    });
+    t.deepLooseEqual(headers[2], {
+        name: 'zed',
+        value: 'content',
+    });
+
     t.end();
+    stubVerify.restore();
+});
+
+test('processHeaders adds content header for AWS4/SHA256', (t) => {
+    const h = new Headers();
+    h.append('foo', 'bar');
+    const req = { headers: h };
+    const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
+
+    consts.AUTH_METHOD = 'random';
+    let headers = _.processHeaders(req, 'foo');
+    t.notOk(headers.some(el => el.name && el.name.toLowerCase() === 'x-amz-content-sha256'));
+
+    consts.AUTH_METHOD = 'AWS4_SIGNED_HEADERS';
+    headers = _.processHeaders(req, 'foo');
+    t.ok(headers.some(el => el.name && el.name.toLowerCase() === 'x-amz-content-sha256'));
+
+    t.end();
+    stubVerify.restore();
+});
+
+test('processHeaders content header is correctly hashed', (t) => {
+    const h = new Headers();
+    h.append('foo', 'bar');
+    const req = { headers: h };
+    const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
+
+    const headers = _.processHeaders(req, 'body-content');
+    const contentHeader = headers.find(el => el.name === 'x-amz-content-sha256');
+    t.equal(contentHeader.value, sha256('body-content').toString());
+
+    t.end();
+    stubVerify.restore();
 });
 
 test('formatCanonicalHeaders requires array of objects', (t) => {
-    t.fail('not implemented');
+    t.throws(() => _.formatCanonicalHeaders(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.formatCanonicalHeaders(''), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatCanonicalHeaders(87), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatCanonicalHeaders('oo'), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatCanonicalHeaders({}), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatCanonicalHeaders(['foo', 'bar']), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.formatCanonicalHeaders([{}]), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.throws(() => _.formatCanonicalHeaders([{ name: 'foo' }]), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(() => _.formatCanonicalHeaders([{ name: 'foo', value: 'bar' }]), Error(ERROR_PROPERTY_NOT_FOUND));
     t.end();
 });
 
 test('formatCanonicalHeaders returns correctly formatted string', (t) => {
-    t.fail('not implemented');
+    let headers = [];
+    t.equal(_.formatCanonicalHeaders(headers), '');
+    headers = [{
+        name: 'foo',
+        value: 'bar',
+    }];
+    t.equal(_.formatCanonicalHeaders(headers), 'foo:bar\n');
+    headers = [{
+        name: 'foo',
+        value: 'bar',
+    }, {
+        name: 'baz',
+        value: 'bag',
+    }];
+    t.equal(_.formatCanonicalHeaders(headers), 'foo:bar\nbaz:bag\n');
     t.end();
 });
 
 test('formatSignedHeaders requires array of objects', (t) => {
-    t.fail('not implemented');
+    t.throws(() => _.formatSignedHeaders(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => _.formatSignedHeaders(''), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatSignedHeaders(87), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatSignedHeaders('oo'), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatSignedHeaders({}), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.throws(() => _.formatSignedHeaders(['foo', 'bar']), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.formatSignedHeaders([{}]), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(() => _.formatSignedHeaders([{ name: 'foo' }]), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => _.formatSignedHeaders([{ name: 'foo' }]), Error(ERROR_PARAM_TYPE_IS_NOT_ARRAY));
+    t.doesNotThrow(() => _.formatSignedHeaders([{ name: 'foo' }]), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => _.formatSignedHeaders([{ name: 'foo' }]), Error(ERROR_PROPERTY_NOT_FOUND));
     t.end();
 });
 
 test('formatSignedHeaders returns correctly formatted string', (t) => {
-    t.fail('not implemented');
+    let headers = [];
+    t.equal(_.formatSignedHeaders(headers), '');
+    headers = [{
+        name: 'foo',
+        value: 'bar',
+    }];
+    t.equal(_.formatSignedHeaders(headers), 'foo');
+    headers = [{
+        name: 'foo',
+        value: 'bar',
+    }, {
+        name: 'baz',
+        value: 'bag',
+    }];
+    t.equal(_.formatSignedHeaders(headers), 'foo;baz');
     t.end();
 });
 
@@ -171,11 +394,78 @@ test('formatSignedHeaders returns correctly formatted string', (t) => {
  */
 
 test('createCanonicalRequest requires url as string and method const inputs', (t) => {
-    t.fail('not implemented');
+    const stubReqBody = sinon.stub(_, 'getRequestBody').returns('');
+    const stubProcHead = sinon.stub(_, 'processHeaders').returns([]);
+    const stubEncQSP = sinon.stub(_, 'encodeQueryStringParameters').returns('');
+    const stubFormatCH = sinon.stub(_, 'formatCanonicalHeaders').returns('');
+    const stubformatSH = sinon.stub(_, 'formatSignedHeaders').returns('');
+    const stubHex = sinon.stub(utils, 'hex');
+
+    t.throws(() => createCanonicalRequest(), Error(ERROR_PARAM_REQUIRED));
+    t.throws(() => createCanonicalRequest('foo'), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest(['foo']), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest(987), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest({}), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.throws(() => createCanonicalRequest({ method: 'foo' }), Error(ERROR_PARAM_IS_NOT_ALLOWED));
+    t.throws(() => createCanonicalRequest({ method: 'POST' }), Error(ERROR_PARAM_IS_NOT_ALLOWED));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(ERROR_PARAM_IS_NOT_ALLOWED));
+
     t.end();
+    stubHex.restore();
+    stubFormatCH.restore();
+    stubformatSH.restore();
+    stubEncQSP.restore();
+    stubProcHead.restore();
+    stubReqBody.restore();
 });
 
-test('createStringToSign requires url as string and method const inputs', (t) => {
+test('createCanonicalRequest calls all sub functions and returns formatted string', (t) => {
+    const stubReqBody = sinon.stub(_, 'getRequestBody').returns('body-content');
+    const intHeaders = [{
+        name: 'test-header',
+        value: 'test-val',
+    }];
+    const stubProcHead = sinon.stub(_, 'processHeaders').returns(intHeaders);
+    const stubEncQSP = sinon.stub(_, 'encodeQueryStringParameters').returns('query=string');
+    const stubFormatCH = sinon.stub(_, 'formatCanonicalHeaders').returns('canon-head');
+    const stubFormatSH = sinon.stub(_, 'formatSignedHeaders').returns('sign-head');
+    // const stubHash = sinon.stub(crypto, 'sha256').returns('hashed-body');
+    const stubHex = sinon.stub(utils, 'hex').returns('hex-body');
+    // const stubURL = sinon.createStubInstance(URL);
+    // stubURL.pathname = 'url-path';
+    // stubURL.searchParams = 'querystring=testqa';
+
+    const reqParam = { method: 'GET', url: 'http://bbh.co.uk/url-path' };
+    const result = createCanonicalRequest(reqParam);
+    t.ok(stubReqBody.calledOnce);
+    t.ok(stubReqBody.calledWith(reqParam));
+    t.ok(stubProcHead.calledOnce);
+    t.ok(stubProcHead.calledWith(reqParam, 'body-content'));
+    t.ok(stubEncQSP.calledOnce);
+    t.ok(stubEncQSP.calledWith(new URLSearchParams()));
+    t.ok(stubFormatCH.calledOnce);
+    t.ok(stubFormatCH.calledWith(intHeaders));
+    t.ok(stubFormatSH.calledOnce);
+    t.ok(stubFormatSH.calledWith(intHeaders));
+    // t.ok(stubHash.calledOnce);
+    // t.ok(stubHash.calledWith('body-content'));
+    t.ok(stubHex.calledOnce);
+    t.ok(stubHex.calledWith(sha256('body-content')));
+    t.equal(result, 'GET\n/url-path\nquery=string\ncanon-head\nsign-head\nhex-body\n');
+    t.end();
+
+    stubHex.restore();
+    stubFormatCH.restore();
+    stubFormatSH.restore();
+    stubEncQSP.restore();
+    stubProcHead.restore();
+    stubReqBody.restore();
+});
+
+test.skip('createStringToSign requires url as string and method const inputs', (t) => {
     t.fail('not implemented');
     t.end();
 });
