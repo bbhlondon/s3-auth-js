@@ -3,67 +3,48 @@
  * algorithm exactly, and to remain as easy to follow from the specification at
  * http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html as possible
  */
-
+import sha256 from 'crypto-js/sha256';
 import {
     ERROR_PARAM_REQUIRED,
-    ERROR_PARAM_TYPE_IS_NOT_STRING,
-    ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,
+    ERROR_PARAM_IS_NOT_ALLOWED,
+    ERROR_PARAM_TYPE_IS_NOT_OBJECT,
+    ERROR_PROPERTY_NOT_FOUND,
+    HTTP_METHODS_ALLOWED,
 } from '../consts';
+import * as _ from './_aws';
 import {
-    pad,
     hex,
 } from './utils';
-// import {
-//     sha256Hash,
-//     hmacSha256,
-// } from './hash';
 
 /**
- * Returns ISO8601 timestamp e.g. "20130524T000000Z"
+ * Returns a string in the format AWS requires, with 'keys' for:
+ * HTTPMethod, CanonicalURI, CanonicalQueryString, CanonicalHeaders, SignedHeaders, HashedPayload
  *
  * @export
  * @returns {string}
  */
-export function getAWSTimestamp() {
-    const now = new Date();
-    return `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+export function createCanonicalRequest(request) {
+    if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (!('method' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!HTTP_METHODS_ALLOWED.includes(request.method)) throw Error(ERROR_PARAM_IS_NOT_ALLOWED);
+
+    const url = new URL(request.url);
+    const body = _.getRequestBody(request);
+    const headers = _.processHeaders(request, body);
+
+    const CanonicalRequestObj = {
+        HTTPMethod: request.method,
+        CanonicalURI: url.pathname,
+        CanonicalQueryString: _.encodeQueryStringParameters(url.searchParams),
+        CanonicalHeaders: _.formatCanonicalHeaders(headers),
+        SignedHeaders: _.formatSignedHeaders(headers),
+        HashedPayload: hex(sha256(body)),
+    };
+
+    return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.CanonicalHeaders}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
 }
 
-/**
- * URI encode every byte. UriEncode() must enforce the following rules:
- *
- * - URI encode every byte except the unreserved characters:
- *   'A'-'Z', 'a'-'z', '0'-'9', '-', '.', '_', and '~'.
- * - The space character is a reserved character and must be encoded as "%20" (and not as "+").
- * - Each URI encoded byte is formed by a '%' and the two-digit hexadecimal value of the byte.
- * - Letters in the hexadecimal value must be uppercase, for example "%1A".
- * - Encode the forward slash character, '/', everywhere except in the object key name.
- * For example, if the object key name is photos/Jan/sample.jpg, the forward slash in the
- *   key name is not encoded.
- *
- * @export
- * @returns {string}
- */
-export function AWSURIEncode(input, encodeSlash) {
-    if (input === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (encodeSlash === undefined) throw Error(ERROR_PARAM_REQUIRED);
-    if (typeof input !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (typeof encodeSlash !== 'boolean') throw Error(ERROR_PARAM_TYPE_IS_NOT_BOOLEAN);
+export function createStringToSign() {
 
-    let ch;
-    let i;
-    let result = '';
-    for (i = 0; i < input.length; i += 1) {
-        ch = input[i];
-        if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch === '_' || ch === '-' || ch === '~' || ch === '.') {
-            result += ch;
-        } else if (ch === ' ') {
-            result += '%20';
-        } else if (ch === '/') {
-            result += encodeSlash ? '%2F' : ch;
-        } else {
-            result += `%${hex(ch).toUpperCase()}`;
-        }
-    }
-    return result;
 }
