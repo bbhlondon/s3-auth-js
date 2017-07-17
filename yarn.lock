@@ -4423,10 +4423,6 @@ server-destroy@1.0.1, server-destroy@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/server-destroy/-/server-destroy-1.0.1.tgz#f13bf928e42b9c3e79383e61cc3998b5d14e6cdd"
 
-service-worker-mock@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/service-worker-mock/-/service-worker-mock-1.0.0.tgz#3d09c614332db44ee2eec9d039664b10e86cd73f"
-
 set-blocking@^2.0.0, set-blocking@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
