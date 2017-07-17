@@ -31,13 +31,22 @@ test('setToken throws exception when undefined passed', (t) => {
     setToken(undefined).then(() => { }, e => t.equal(e.message, 'Value undefined'));
 });
 
+test('setToken calls idb', (t) => {
+    const stub = sinon.stub(idb, 'storeSet').returns(Promise.resolve());
+
+    t.plan(1);
+    setToken(TEST_TOKEN).then(() => t.ok(stub.calledOnce));
+
+    stub.restore();
+});
+
 test('getToken calls idb', (t) => {
     const stub = sinon.stub(idb, 'storeGet').returns(Promise.resolve());
 
     t.plan(1);
     getToken().then(() => t.ok(stub.calledOnce));
 
-    idb.storeGet.restore();
+    stub.restore();
 });
 
 test('deleteToken calls idb', (t) => {
@@ -46,5 +55,5 @@ test('deleteToken calls idb', (t) => {
     t.plan(1);
     deleteToken().then(() => t.ok(stub.calledOnce));
 
-    idb.storeDelete.restore();
+    stub.restore();
 });

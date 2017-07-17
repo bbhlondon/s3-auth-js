@@ -2,7 +2,7 @@ import test from 'tape';
 import sinon from 'sinon';
 import registerServiceWorker from './register';
 import * as _ from './_register';
-import { ERROR_SERVICE_WORKER_NOT_SUPPORTED, ERROR_SERVICE_WORKER_REGISTRATION_FAILED, ERROR_SERVICE_WORKER_ALREADY_EXISTS } from '../consts';
+import { ERROR_SERVICE_WORKER_NOT_SUPPORTED, ERROR_SERVICE_WORKER_ALREADY_EXISTS } from '../consts';
 
 
 test('serviceworker functionality doesnt exist', (t) => {
@@ -36,12 +36,13 @@ test('serviceworker already exist', (t) => {
     stub.restore();
 });
 
-test('serviceworker tries but fails to register', (t) => {
+test('serviceworker tries to register', (t) => {
     const spy = sinon.spy(navigator.serviceWorker, 'register');
 
-    t.plan(2);
-    registerServiceWorker('worker.js').then(() => { }, (e) => {
-        t.equal(e, ERROR_SERVICE_WORKER_REGISTRATION_FAILED);
+    t.plan(1);
+    registerServiceWorker('dummy.js').then(() => {
+        t.ok(spy.calledOnce);
+    }, () => {
         t.ok(spy.calledOnce);
     });
     window.dispatchEvent(new Event('load'));

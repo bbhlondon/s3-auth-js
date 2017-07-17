@@ -1,6 +1,6 @@
 import Logger from '../logger';
 import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
-import { isBypassed, isGateway } from './_handlers';
+import { isBypassed, isGateway, shouldInterceptRequest, respond } from './_handlers';
 import makeMessage from '../utils';
 import { isAuthorized, setCredentials, getCredentials, deleteCredentials } from './state';
 import { BYPASSED_URLS, GATEWAY_URL, MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from '../consts';
@@ -73,16 +73,25 @@ export function handleMessage(event) {
 export function handleFetch(event) {
     Logger.log(`[Service worker] Fetch event: ${event.request.url}`);
 
-    if (isAuthorized()) {
-        if (isGateway(GATEWAY_URL, event.request)) {
-            repondWithRedirectToIndex(event);
+
+    if (shouldInterceptRequest(event.request) && !isBypassed(BYPASSED_URLS, event.request)) {
+        let newRequest;
+
+        if (isAuthorized()) {
+            if (isGateway(GATEWAY_URL, event.request)) {
+                newRequest = repondWithRedirectToIndex(event);
+            } else {
+                newRequest = respondWithRequestedItem(event);
+            }
         } else {
-            respondWithRequestedItem(event);
+            newRequest = respondWithRedirectToGateway(event);
         }
-    } else if (isBypassed(BYPASSED_URLS, event.request)) {
-        respondWithRequestedItem(event);
-    } else {
-        respondWithRedirectToGateway(event);
+
+        try {
+            respond(event, newRequest);
+        } catch (e) {
+            Logger.log('[Service worker] Not a FetchEvent');
+        }
     }
 }
 

@@ -15,14 +15,13 @@ test('withStore throws exception when invalid operation passed', (t) => {
     _.withStore('readwrite', () => { }).then(() => { }, e => t.equal(e.message, ERROR_INVALID_OPERATION));
 });
 
-
 test('storeGet returns desired key', (t) => {
-    sinon.stub(_, 'withStore').returns(Promise.resolve('testval'));
+    const stub = sinon.stub(_, 'withStore').returns(Promise.resolve('testval'));
 
     t.plan(1);
     storeGet('testkey').then(value => t.ok(value === 'testval'));
 
-    _.withStore.restore();
+    stub.restore();
 });
 
 test('storeSet returns key value', (t) => {
