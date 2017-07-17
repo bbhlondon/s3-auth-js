@@ -3,8 +3,7 @@ import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedir
 import { GATEWAY_URL, INDEX_URL } from '../consts';
 
 test('respondWithRedirectToGateway redirects to gateway page', (t) => {
-    const testUrl = 'http://test';
-    const event = { request: new Request(testUrl) };
+    const event = { type: 'fetch', request: new Request(window.location.href) };
     const expected = window.location.href.replace(/\/$/, '') + GATEWAY_URL;
 
     t.plan(1);
@@ -13,8 +12,7 @@ test('respondWithRedirectToGateway redirects to gateway page', (t) => {
 });
 
 test('repondWithRedirectToIndex redirects to index page', (t) => {
-    const testUrl = 'http://test';
-    const event = { request: new Request(testUrl) };
+    const event = { type: 'fetch', request: new Request(window.location.href) };
     const expected = window.location.href.replace(/\/$/, '') + INDEX_URL;
 
     t.plan(1);
@@ -23,9 +21,8 @@ test('repondWithRedirectToIndex redirects to index page', (t) => {
 });
 
 test('respondWithRequestedItem responds with requested item', (t) => {
-    const testUrl = 'http://test/';
-    const event = { request: new Request(testUrl) };
-    const expected = testUrl;
+    const event = { type: 'fetch', request: new Request(window.location.href) };
+    const expected = event.request.url;
 
     t.plan(1);
     const request = respondWithRequestedItem(event);
