@@ -1,4 +1,4 @@
-/* global ENV*/
+/* global ENV */
 export default function canLog() {
     try {
         return ENV !== 'production';

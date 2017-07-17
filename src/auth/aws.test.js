@@ -258,9 +258,8 @@ test('processHeaders returns array of objects with name & value keys, sorted by 
     h.append('foo', 'bar');
     const req = { headers: h };
     const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
-    consts.AUTH_METHOD = 'random'; // tested below, this keeps verification simple
 
-    const headers = _.processHeaders(req, 'foo');
+    const headers = _.processHeaders(req, 'foo', 'random');
     t.ok(Array.isArray(headers));
     t.equal(headers.length, 3);
     t.deepLooseEqual(headers[0], {
@@ -286,12 +285,10 @@ test('processHeaders adds content header for AWS4/SHA256', (t) => {
     const req = { headers: h };
     const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
 
-    consts.AUTH_METHOD = 'random';
-    let headers = _.processHeaders(req, 'foo');
+    let headers = _.processHeaders(req, 'foo', 'random');
     t.notOk(headers.some(el => el.name && el.name.toLowerCase() === 'x-amz-content-sha256'));
 
-    consts.AUTH_METHOD = 'AWS4_SIGNED_HEADERS';
-    headers = _.processHeaders(req, 'foo');
+    headers = _.processHeaders(req, 'foo', 'AWS4_SIGNED_HEADERS');
     t.ok(headers.some(el => el.name && el.name.toLowerCase() === 'x-amz-content-sha256'));
 
     t.end();
