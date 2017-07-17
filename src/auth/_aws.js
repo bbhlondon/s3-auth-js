@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import sha256 from 'crypto-js/sha256';
 import {
-    AUTH_METHOD,
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     ERROR_PARAM_TYPE_IS_NOT_BOOLEAN,

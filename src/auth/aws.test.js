@@ -258,7 +258,7 @@ test('processHeaders returns array of objects with name & value keys, sorted by 
     h.append('foo', 'bar');
     const req = { headers: h };
     const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
- 
+
     const headers = _.processHeaders(req, 'foo', 'random');
     t.ok(Array.isArray(headers));
     t.equal(headers.length, 3);
@@ -284,7 +284,7 @@ test('processHeaders adds content header for AWS4/SHA256', (t) => {
     h.append('foo', 'bar');
     const req = { headers: h };
     const stubVerify = sinon.stub(_, 'verifyHeaderRequirements').returns(true);
-    
+
     let headers = _.processHeaders(req, 'foo', 'random');
     t.notOk(headers.some(el => el.name && el.name.toLowerCase() === 'x-amz-content-sha256'));
 
