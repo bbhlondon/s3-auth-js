@@ -1,3 +1,4 @@
+/* eslint no-unused-vars: 0 */
 import Logger from '../logger';
 import { GATEWAY_URL, INDEX_URL } from '../consts';
 
