@@ -27,65 +27,112 @@ test('isGateway detects gateway url', (t) => {
     t.notOk(_.isGateway(gatewayUrl, requestNotGateway));
 });
 
+test('shouldInterceptRequest filters urls correctly', (t) => {
+    const stub = sinon.stub(_, 'getCurrentHostname').returns(window.location.hostname);
 
-test('handleFetch redirects to gateway when not authorized', (t) => {
-    const event = { type: 'fetch', request: { url: 'url' } };
-    const stubIsAuthorized = sinon.stub(state, 'isAuthorized').returns(false);
-    const stubRespond = sinon.stub(responses, 'respondWithRedirectToGateway');
+    t.plan(2);
+    t.ok(_.shouldInterceptRequest(new Request(window.location.href)));
+    t.notOk(_.shouldInterceptRequest(new Request('http://www.example.com')));
 
-
-    t.plan(1);
-    handleFetch(event);
-    t.ok(stubRespond.calledOnce);
-
-    stubIsAuthorized.restore();
-    stubRespond.restore();
+    stub.restore();
 });
 
-test('handleFetch responds with item when bypassed', (t) => {
-    const event = { type: 'fetch', request: { url: 'url' } };
-    const stubIsAuthorized = sinon.stub(state, 'isAuthorized').returns(false);
-    const stubIsBypassed = sinon.stub(_, 'isBypassed').returns(true);
-    const stubRespond = sinon.stub(responses, 'respondWithRequestedItem');
+test('handleFetch bypasses request to different domains', (t) => {
+    const event = { type: 'fetch', request: new Request('http://www.example.com') };
+    const spyShouldInterceptRequest = sinon.spy(_, 'shouldInterceptRequest');
+    const spyRespond = sinon.stub(_, 'respond');
 
-
-    t.plan(1);
+    t.plan(2);
     handleFetch(event);
-    t.ok(stubRespond.calledOnce);
+    t.ok(spyShouldInterceptRequest.calledOnce);
+    t.ok(spyRespond.notCalled);
+
+    spyShouldInterceptRequest.restore();
+    spyRespond.restore();
+});
+
+test('handleFetch bypasses when bypassed item requested', (t) => {
+    const event = { type: 'fetch', request: new Request(window.location.href) };
+    const stubIsBypassed = sinon.stub(_, 'isBypassed').returns(true);
+    const spyShouldInterceptRequest = sinon.spy(_, 'shouldInterceptRequest');
+    const spyRespond = sinon.stub(_, 'respond');
+
+
+    t.plan(3);
+    handleFetch(event);
+    t.ok(stubIsBypassed.calledOnce);
+    t.ok(spyShouldInterceptRequest.called);
+    t.ok(spyRespond.notCalled);
+
+    stubIsBypassed.restore();
+    spyShouldInterceptRequest.restore();
+    spyRespond.restore();
+});
+
+test('handleFetch redirects to gateway when not authorized', (t) => {
+    const event = { type: 'fetch', request: new Request(window.location.href) };
+    const stubIsAuthorized = sinon.stub(state, 'isAuthorized').returns(false);
+    const stubRepondWith = sinon.stub(responses, 'respondWithRedirectToGateway');
+    const spyRespond = sinon.stub(_, 'respond');
+    const spyShouldInterceptRequest = sinon.spy(_, 'shouldInterceptRequest');
+
+    t.plan(4);
+    handleFetch(event);
+    t.ok(spyShouldInterceptRequest.calledOnce);
+    t.ok(stubIsAuthorized.called);
+    t.ok(stubRepondWith.calledOnce);
+    t.ok(spyRespond.calledOnce);
 
     stubIsAuthorized.restore();
-    stubIsBypassed.restore();
-    stubRespond.restore();
+    stubRepondWith.restore();
+    spyRespond.restore();
+    spyShouldInterceptRequest.restore();
 });
 
 test('handleFetch responds with item when authorized', (t) => {
-    const event = { type: 'fetch', request: { url: 'url' } };
+    const event = { type: 'fetch', request: new Request(window.location.href) };
     const stubIsAuthorized = sinon.stub(state, 'isAuthorized').returns(true);
     const stubIsBypassed = sinon.stub(_, 'isBypassed').returns(false);
-    const stubRespond = sinon.stub(responses, 'respondWithRequestedItem');
+    const stubRepondWith = sinon.stub(responses, 'respondWithRequestedItem');
+    const spyRespond = sinon.stub(_, 'respond');
+    const spyShouldInterceptRequest = sinon.spy(_, 'shouldInterceptRequest');
 
 
-    t.plan(1);
+    t.plan(5);
     handleFetch(event);
-    t.ok(stubRespond.calledOnce);
+    t.ok(spyShouldInterceptRequest.calledOnce);
+    t.ok(stubIsAuthorized.called);
+    t.ok(stubIsBypassed.called);
+    t.ok(spyRespond.calledOnce);
+    t.ok(stubRepondWith.calledOnce);
 
     stubIsAuthorized.restore();
     stubIsBypassed.restore();
-    stubRespond.restore();
+    stubRepondWith.restore();
+    spyRespond.restore();
+    spyShouldInterceptRequest.restore();
 });
 
 test('handleFetch responds with index page when authorized and requesting gateway', (t) => {
-    const event = { type: 'fetch', request: { url: 'url' } };
+    const event = { type: 'fetch', request: new Request(window.location.href) };
     const stubIsAuthorized = sinon.stub(state, 'isAuthorized').returns(true);
     const stubIsGateway = sinon.stub(_, 'isGateway').returns(true);
-    const stubRespond = sinon.stub(responses, 'repondWithRedirectToIndex');
+    const stubRepondWith = sinon.stub(responses, 'repondWithRedirectToIndex');
+    const spyRespond = sinon.stub(_, 'respond');
+    const spyShouldInterceptRequest = sinon.spy(_, 'shouldInterceptRequest');
 
 
-    t.plan(1);
+    t.plan(5);
     handleFetch(event);
-    t.ok(stubRespond.calledOnce);
+    t.ok(spyShouldInterceptRequest.calledOnce);
+    t.ok(stubIsAuthorized.called);
+    t.ok(stubIsGateway.called);
+    t.ok(stubRepondWith.calledOnce);
+    t.ok(spyRespond.calledOnce);
 
     stubIsAuthorized.restore();
     stubIsGateway.restore();
-    stubRespond.restore();
+    stubRepondWith.restore();
+    spyRespond.restore();
+    spyShouldInterceptRequest.restore();
 });

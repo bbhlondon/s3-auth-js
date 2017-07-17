@@ -27,14 +27,10 @@ export default function registerServiceWorker(swPath) {
 
         window.addEventListener('load', () => {
             navigator.serviceWorker.register(swPath).then((registration) => {
-                // Registration was successful
                 Logger.log(`[Client] ServiceWorker registration successful with scope: ${registration.scope}`);
-
                 return resolve(true);
             }, (err) => {
-                // registration failed :(
                 Logger.log(`[Client] ServiceWorker registration failed: ${err}`);
-
                 return reject(ERROR_SERVICE_WORKER_REGISTRATION_FAILED);
             });
         });

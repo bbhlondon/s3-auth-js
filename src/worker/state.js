@@ -1,7 +1,7 @@
 import { getToken, setToken, deleteToken } from './storage';
 
-// Token
-let token = null;
+// Credentials
+let credentials;
 
 /**
  * Is User authorized
@@ -9,7 +9,7 @@ let token = null;
  * @returns {Boolean}
  */
 export function isAuthorized() {
-    return !!token;
+    return !!credentials;
 }
 
 /**
@@ -20,9 +20,11 @@ export function isAuthorized() {
  * @returns {Promise}
  */
 export function setCredentials(newValue) {
-    token = newValue;
+    return setToken(newValue).then((storedToken) => {
+        credentials = storedToken;
 
-    return setToken(newValue);
+        return credentials;
+    });
 }
 
 /**
@@ -32,7 +34,7 @@ export function setCredentials(newValue) {
  * @returns {Promise}
  */
 export function getCredentials() {
-    if (token) { return Promise.resolve(token); }
+    if (credentials) { return Promise.resolve(credentials); }
     return getToken();
 }
 
@@ -43,7 +45,9 @@ export function getCredentials() {
  * @returns {Promise}
  */
 export function deleteCredentials() {
-    token = null;
+    return deleteToken().then((storedToken) => {
+        credentials = storedToken;
 
-    return deleteToken();
+        return credentials;
+    });
 }
