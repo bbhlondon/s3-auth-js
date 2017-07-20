@@ -10,7 +10,6 @@ import {
     ERROR_PARAM_IS_NOT_ALLOWED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     HTTP_METHODS_ALLOWED,
-    AWS_REGION,
     AUTH_IDENTIFIER_HEADER,
 } from '../consts';
 import * as _ from './_aws';

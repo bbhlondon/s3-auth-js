@@ -7,7 +7,6 @@ import {
 } from '../consts';
 
 export default function amendRequest(request, awsAccessKey, awsSecretKey) {
-    
     if (!request) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
     if (!awsAccessKey) throw Error(ERROR_PARAM_REQUIRED);
