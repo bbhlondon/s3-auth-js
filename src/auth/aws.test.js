@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import * as utils from './utils';
 import * as consts from '../consts';
 import * as _ from './_aws';
+import { createCanonicalRequest, createStringToSign, createSigningKey, createSignature, createAuthorizationHeader } from './aws';
 
 
 /**
@@ -11,7 +12,7 @@ import * as _ from './_aws';
  */
 
 test('getAWSTimestamp returns right format', (t) => {
-    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z'));
+    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z').valueOf());
 
     t.plan(1);
     t.equal(_.getAWSTimestamp(), '20170711T094656Z');
@@ -20,7 +21,7 @@ test('getAWSTimestamp returns right format', (t) => {
 });
 
 test('getShortDate returns right format', (t) => {
-    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z'));
+    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z').valueOf());
 
     t.plan(1);
     t.equal(_.getShortDate(), '20170711');
@@ -101,7 +102,7 @@ test('encodeQueryStringParameters requires a URL.searchParams object', (t) => {
     t.throws(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PROPERTY_NOT_FOUND));
     params.foo = 'bar';
     t.throws(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    params.set = () => {};
+    params.set = () => { };
     t.throws(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PROPERTY_NOT_FOUND));
     params = new URLSearchParams('');
     t.doesNotThrow(() => _.encodeQueryStringParameters(params), Error(consts.ERROR_PARAM_REQUIRED));
@@ -138,7 +139,7 @@ test('getRequestBody requires a Request object to be passed in', (t) => {
     t.throws(() => _.getRequestBody(request), Error(consts.ERROR_PROPERTY_NOT_FOUND));
     request.bodyUsed = false;
     t.throws(() => _.getRequestBody(request), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    request.text = () => {};
+    request.text = () => { };
     t.doesNotThrow(() => _.getRequestBody(request), Error(consts.ERROR_PARAM_REQUIRED));
     t.doesNotThrow(() => _.getRequestBody(request), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
     t.doesNotThrow(() => _.getRequestBody(request), Error(consts.ERROR_PROPERTY_NOT_FOUND));
@@ -394,17 +395,17 @@ test('createCanonicalRequest requires url as string and method const inputs', (t
     const stubformatSH = sinon.stub(_, 'formatSignedHeaders').returns('');
     const stubHex = sinon.stub(utils, 'hex');
 
-    t.throws(() => _.createCanonicalRequest(), Error(consts.ERROR_PARAM_REQUIRED));
-    t.throws(() => _.createCanonicalRequest('foo'), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => _.createCanonicalRequest(['foo']), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => _.createCanonicalRequest(987), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => _.createCanonicalRequest({}), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    t.throws(() => _.createCanonicalRequest({ method: 'foo' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
-    t.throws(() => _.createCanonicalRequest({ method: 'POST' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
-    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_REQUIRED));
-    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.throws(() => createCanonicalRequest(), Error(consts.ERROR_PARAM_REQUIRED));
+    t.throws(() => createCanonicalRequest('foo'), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest(['foo']), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest(987), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => createCanonicalRequest({}), Error(consts.ERROR_PROPERTY_NOT_FOUND));
+    t.throws(() => createCanonicalRequest({ method: 'foo' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.throws(() => createCanonicalRequest({ method: 'POST' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
 
     t.end();
     stubHex.restore();
@@ -432,7 +433,7 @@ test('createCanonicalRequest calls all sub functions and returns formatted strin
     // stubURL.searchParams = 'querystring=testqa';
 
     const reqParam = { method: 'GET', url: 'http://bbh.co.uk/url-path' };
-    const result = _.createCanonicalRequest(reqParam);
+    const result = createCanonicalRequest(reqParam);
     t.ok(stubReqBody.calledOnce);
     t.ok(stubReqBody.calledWith(reqParam));
     t.ok(stubProcHead.calledOnce);
@@ -460,7 +461,7 @@ test('createCanonicalRequest calls all sub functions and returns formatted strin
 
 
 test('createScope returns right format', (t) => {
-    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z'));
+    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z').valueOf());
 
     t.plan(1);
     t.equal(_.createScope(), `20170711/${consts.AWS_REGION}/s3/aws4_request`);
@@ -470,18 +471,85 @@ test('createScope returns right format', (t) => {
 
 
 test('createStringToSign returns correct format', (t) => {
-
     const timestamp = '20130524T000000Z';
     const stubTimestamp = sinon.stub(_, 'getAWSTimestamp').returns(timestamp);
     const scope = 'scope';
     const stubScope = sinon.stub(_, 'createScope').returns(scope);
-    const canonicalRequest = 'canonicalRequest';
+    const canonicalRequest = 'request';
 
     t.plan(1);
-    const actual = _.createStringToSign(canonicalRequest);
-    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${canonicalRequest}`;
+    const actual = createStringToSign(canonicalRequest);
+    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(sha256(canonicalRequest).toString())}`;
     t.equal(actual, expected);
 
     stubTimestamp.restore();
     stubScope.restore();
+});
+
+test('createStringToSign handles errors', (t) => {
+    t.plan(2);
+    t.throws(() => createStringToSign(), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createStringToSign({}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+});
+
+test('createSigningKey encrypts correctly', (t) => {
+    const spy = sinon.spy(_, 'toHmacSHA256');
+
+    createSigningKey('key', 'str');
+    t.plan(1);
+    t.equal(spy.callCount, 4);
+
+    spy.restore();
+});
+
+test('createSigningKey handles errors', (t) => {
+    t.plan(4);
+    t.throws(() => createSigningKey(), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createSigningKey({}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+    t.throws(() => createSigningKey('test'), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createSigningKey('test', {}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+});
+
+test('createSignature encrypts correctly', (t) => {
+    const spy = sinon.spy(_, 'toHmacSHA256');
+
+    createSignature('key', 'str');
+    t.plan(1);
+    t.equal(spy.callCount, 1);
+
+    spy.restore();
+});
+
+test('createSignature handles errors', (t) => {
+    t.plan(4);
+    t.throws(() => createSignature(), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createSignature({}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+    t.throws(() => createSignature('test'), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createSignature('test', {}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+});
+
+test('createAuthorizationHeader returns correct format', (t) => {
+    const timestamp = '20130524';
+    const stubTimestamp = sinon.stub(_, 'getShortDate').returns(timestamp);
+
+    const awsAccessKey = 'KEY';
+    const awsRegion = 'region';
+    const signature = 'signature';
+
+    t.plan(1);
+    const actual = createAuthorizationHeader(awsAccessKey, awsRegion, signature);
+    const expected = `${consts.AUTH_IDENTIFIER_HEADER} Credential=${awsAccessKey}/${_.getShortDate()}/${awsRegion}/s3/aws4_request,SignedHeaders=host;range;x-amz-content-sha256;x-amz-date,Signature=${signature}`;
+    t.equal(actual, expected);
+
+    stubTimestamp.restore();
+});
+
+test('createAuthorizationHeader handles errors', (t) => {
+    t.plan(6);
+    t.throws(() => createAuthorizationHeader(), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createAuthorizationHeader({}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+    t.throws(() => createAuthorizationHeader('test'), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createAuthorizationHeader('test', {}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
+    t.throws(() => createAuthorizationHeader('test', 'test'), consts.ERROR_PARAM_REQUIRED);
+    t.throws(() => createAuthorizationHeader('test', 'test', {}), consts.ERROR_PARAM_TYPE_IS_NOT_STRING);
 });
