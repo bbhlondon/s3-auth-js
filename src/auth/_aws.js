@@ -256,6 +256,14 @@ export function createScope() {
 }
 
 
+/**
+ * Performs HmacSHA256 encryption
+ * 
+ * @export
+ * @param {any} message 
+ * @param {any} key 
+ * @returns {String}
+ */
 export function toHmacSHA256(message, key) {
     return hmacSHA256(message, key);
 }
