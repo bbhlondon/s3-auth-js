@@ -129,7 +129,7 @@ export function ammendRequest(request) {
     const stringToSign = createStringToSign(canonicalRequest);
     const signingKey = createSigningKey(AWS_SECRET_ACCESS_KEY, AWS_REGION);
     const signature = createSignature(signingKey, stringToSign);
-    const authHeader = createAuthorizationHeader(AWS_ACCESS_KEY_ID, AWS_REGION, signature);
+    createAuthorizationHeader(AWS_ACCESS_KEY_ID, AWS_REGION, signature);
     // TODO: Ammend the request
     return request;
 }
