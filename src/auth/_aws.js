@@ -10,7 +10,6 @@ import {
     ERROR_REQUIRED_HEADER_NOT_FOUND,
     ERROR_PROPERTY_NOT_FOUND,
     ERROR_UNSUPPORTED_HTTP_VERB,
-    AWS_REGION,
 } from '../consts';
 import {
     pad,
@@ -266,16 +265,5 @@ export function formatSignedHeaders(headers) {
 export function getShortDate() {
     const now = new Date();
     return `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
-}
-
-
-/**
- * Creates Scope object for signed string i.e. "20130606/us-east-1/s3/aws4_request"
- * 
- * @export
- * @returns {String}
- */
-export function createScope() {
-    return `${getShortDate()}/${AWS_REGION}/s3/aws4_request`;
 }
 

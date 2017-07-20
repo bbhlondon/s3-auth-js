@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import * as utils from './utils';
 import * as consts from '../consts';
 import * as _ from './_aws';
-import { createCanonicalRequest, createStringToSign, createSigningKey, createSignature, createAuthorizationHeader } from './aws';
+import { createCanonicalRequest, createScope, createStringToSign, createSigningKey, createSignature, createAuthorizationHeader } from './aws';
 
 
 /**
@@ -463,7 +463,7 @@ test('createScope returns right format', (t) => {
     const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z').valueOf());
 
     t.plan(1);
-    t.equal(_.createScope(), `20170711/${consts.AWS_REGION}/s3/aws4_request`);
+    t.equal(createScope(consts.AWS_REGION), `20170711/${consts.AWS_REGION}/s3/aws4_request`);
 
     clock.restore();
 });
@@ -473,16 +473,14 @@ test('createStringToSign returns correct format', (t) => {
     const timestamp = '20130524T000000Z';
     const stubTimestamp = sinon.stub(_, 'getAWSTimestamp').returns(timestamp);
     const scope = 'scope';
-    const stubScope = sinon.stub(_, 'createScope').returns(scope);
     const canonicalRequest = 'request';
 
     t.plan(1);
-    const actual = createStringToSign(canonicalRequest);
+    const actual = createStringToSign(canonicalRequest, scope);
     const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(_.toSHA256(canonicalRequest).toString())}`;
     t.equal(actual, expected);
 
     stubTimestamp.restore();
-    stubScope.restore();
 });
 
 test('createStringToSign handles errors', (t) => {

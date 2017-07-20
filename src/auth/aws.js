@@ -47,6 +47,16 @@ export function createCanonicalRequest(request) {
     return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.CanonicalHeaders}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
 }
 
+/**
+ * Creates Scope object for signed string i.e. "20130606/us-east-1/s3/aws4_request"
+ * 
+ * @export
+ * @returns {String}
+ */
+export function createScope(awsRegion) {
+    return `${_.getShortDate()}/${awsRegion}/s3/aws4_request`;
+}
+
 
 /**
  * Returns string to sign
@@ -55,12 +65,11 @@ export function createCanonicalRequest(request) {
  * @param {any} canonicalRequest 
  * @returns 
  */
-export function createStringToSign(canonicalRequest) {
+export function createStringToSign(canonicalRequest, scope) {
     if (!canonicalRequest) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof canonicalRequest !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
     const timeStampISO8601Format = _.getAWSTimestamp();
-    const scope = _.createScope();
     const request = hex(_.toSHA256(canonicalRequest).toString());
 
     return `${AUTH_IDENTIFIER_HEADER}\n${timeStampISO8601Format}\n${scope}\n${request}`;

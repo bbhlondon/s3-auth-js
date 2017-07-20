@@ -1,4 +1,4 @@
-import { createCanonicalRequest, createStringToSign, createSigningKey, createSignature, createAuthorizationHeader, createXAmzContentSha256Header, createXZmzDateHeader } from './aws';
+import { createCanonicalRequest, createScope, createStringToSign, createSigningKey, createSignature, createAuthorizationHeader, createXAmzContentSha256Header, createXZmzDateHeader } from './aws';
 import {
     AWS_REGION,
     ERROR_PARAM_REQUIRED,
@@ -16,7 +16,8 @@ export default function amendRequest(request, awsAccessKey, awsSecretKey) {
     if (typeof awsSecretKey !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
     const canonicalRequest = createCanonicalRequest(request);
-    const stringToSign = createStringToSign(canonicalRequest);
+    const scope = createScope(AWS_REGION);
+    const stringToSign = createStringToSign(canonicalRequest, scope);
     const signingKey = createSigningKey(awsSecretKey, AWS_REGION);
     const signature = createSignature(signingKey, stringToSign);
     const authHeader = createAuthorizationHeader(awsAccessKey, AWS_REGION, signature);
