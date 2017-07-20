@@ -3,7 +3,6 @@
  * algorithm exactly, and to remain as easy to follow from the specification at
  * http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html as possible
  */
-import sha256 from 'crypto-js/sha256';
 import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_OBJECT,
@@ -42,7 +41,7 @@ export function createCanonicalRequest(request) {
         CanonicalQueryString: _.encodeQueryStringParameters(url.searchParams),
         CanonicalHeaders: _.formatCanonicalHeaders(headers),
         SignedHeaders: _.formatSignedHeaders(headers),
-        HashedPayload: hex(sha256(body)),
+        HashedPayload: hex(_.toSHA256(body)),
     };
 
     return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.CanonicalHeaders}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
@@ -62,7 +61,7 @@ export function createStringToSign(canonicalRequest) {
 
     const timeStampISO8601Format = _.getAWSTimestamp();
     const scope = _.createScope();
-    const request = hex(sha256(canonicalRequest).toString());
+    const request = hex(_.toSHA256(canonicalRequest).toString());
 
     return `${AUTH_IDENTIFIER_HEADER}\n${timeStampISO8601Format}\n${scope}\n${request}`;
 }
@@ -98,7 +97,7 @@ export function createSignature(signingKey, stringToSign) {
     if (!stringToSign) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof stringToSign !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
-    return _.toHmacSHA256(signingKey, stringToSign);
+    return _.toHmacSHA256(stringToSign, signingKey);
 }
 
 
@@ -129,7 +128,7 @@ export function createAuthorizationHeader(awsAccessKey, awsRegion, signature) {
  * @returns 
  */
 export function createXAmzContentSha256Header() {
-    return sha256('').toString();
+    return _.toSHA256('').toString();
 }
 
 

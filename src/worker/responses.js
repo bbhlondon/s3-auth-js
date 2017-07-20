@@ -1,7 +1,6 @@
 /* eslint no-unused-vars: 0 */
 import Logger from '../logger';
 import { GATEWAY_URL, INDEX_URL } from '../consts';
-import ammendRequest from '../auth';
 
 
 /**
@@ -26,7 +25,8 @@ export function respondWithRedirectToGateway(event) {
 export function respondWithRequestedItem(event) {
     Logger.log('[Service worker] Response received');
 
-    return ammendRequest(new Request(event.request));
+    // TODO: Amend request
+    return new Request(event.request);
 }
 
 

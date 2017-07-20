@@ -1,4 +1,3 @@
-import sha256 from 'crypto-js/sha256';
 import test from 'tape';
 import sinon from 'sinon';
 import * as utils from './utils';
@@ -311,7 +310,7 @@ test('processHeaders content header is correctly hashed', (t) => {
 
     const headers = _.processHeaders(req, 'body-content');
     const contentHeader = headers.find(el => el.name === 'x-amz-content-sha256');
-    t.equal(contentHeader.value, sha256('body-content').toString());
+    t.equal(contentHeader.value, _.toSHA256('body-content').toString());
 
     t.end();
     stubVerify.restore();
@@ -447,7 +446,7 @@ test('createCanonicalRequest calls all sub functions and returns formatted strin
     // t.ok(stubHash.calledOnce);
     // t.ok(stubHash.calledWith('body-content'));
     t.ok(stubHex.calledOnce);
-    t.ok(stubHex.calledWith(sha256('body-content')));
+    t.ok(stubHex.calledWith(_.toSHA256('body-content')));
     t.equal(result, 'GET\n/url-path\nquery=string\ncanon-head\nsign-head\nhex-body\n');
     t.end();
 
@@ -479,7 +478,7 @@ test('createStringToSign returns correct format', (t) => {
 
     t.plan(1);
     const actual = createStringToSign(canonicalRequest);
-    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(sha256(canonicalRequest).toString())}`;
+    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(_.toSHA256(canonicalRequest).toString())}`;
     t.equal(actual, expected);
 
     stubTimestamp.restore();

@@ -19,6 +19,30 @@ import {
 
 
 /**
+ * Performs HmacSHA256 encryption
+ * 
+ * @export
+ * @param {any} message 
+ * @param {any} key 
+ * @returns {String}
+ */
+export function toHmacSHA256(message, key) {
+    return hmacSHA256(message, key);
+}
+
+/**
+ * Performs SHA256 encryption
+ * 
+ * @export
+ * @param {any} message 
+ * @returns {String}
+ */
+export function toSHA256(message) {
+    return sha256(message);
+}
+
+
+/**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
  *
  * @export
@@ -168,7 +192,7 @@ export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS'
     if (authMethod === 'AWS4_SIGNED_HEADERS') {
         headers.push({
             name: 'x-amz-content-sha256',
-            value: sha256(body).toString(),
+            value: toSHA256(body).toString(),
         });
     }
 
@@ -255,15 +279,3 @@ export function createScope() {
     return `${getShortDate()}/${AWS_REGION}/s3/aws4_request`;
 }
 
-
-/**
- * Performs HmacSHA256 encryption
- * 
- * @export
- * @param {any} message 
- * @param {any} key 
- * @returns {String}
- */
-export function toHmacSHA256(message, key) {
-    return hmacSHA256(message, key);
-}
