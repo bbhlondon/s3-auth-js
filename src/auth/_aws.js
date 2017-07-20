@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import sha256 from 'crypto-js/sha256';
+import hmacSHA256 from 'crypto-js/hmac-sha256';
 import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
@@ -9,11 +10,18 @@ import {
     ERROR_REQUIRED_HEADER_NOT_FOUND,
     ERROR_PROPERTY_NOT_FOUND,
     ERROR_UNSUPPORTED_HTTP_VERB,
+    ERROR_PARAM_IS_NOT_ALLOWED,
+    HTTP_METHODS_ALLOWED,
+    AWS_REGION,
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+    AUTH_IDENTIFIER_HEADER,
 } from '../consts';
 import {
     pad,
     hex,
 } from './utils';
+
 
 /**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
@@ -190,7 +198,7 @@ export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS'
  * ingesting a URL.headers object and returning a string
  *
  * @export
- * @returns {object}
+ * @returns {Object}
  */
 export function formatCanonicalHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -212,7 +220,7 @@ export function formatCanonicalHeaders(headers) {
  * ingesting a URL.headers object and returning a string
  *
  * @export
- * @returns {object}
+ * @returns {Object}
  */
 export function formatSignedHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -227,4 +235,110 @@ export function formatSignedHeaders(headers) {
     });
 
     return response.slice(0, -1);
+}
+
+
+/**
+ * Returns date in formay YYYYMMDD
+ * 
+ * @export
+ * @returns {String}
+ */
+export function getShortDate() {
+    const now = new Date();
+    return `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
+}
+
+
+
+/**
+ * Returns a string in the format AWS requires, with 'keys' for:
+ * HTTPMethod, CanonicalURI, CanonicalQueryString, CanonicalHeaders, SignedHeaders, HashedPayload
+ *
+ * @export
+ * @returns {string}
+ */
+export function createCanonicalRequest(request) {
+    if (request === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof request !== 'object') throw Error(ERROR_PARAM_TYPE_IS_NOT_OBJECT);
+    if (!('method' in request)) throw Error(ERROR_PROPERTY_NOT_FOUND);
+    if (!HTTP_METHODS_ALLOWED.includes(request.method)) throw Error(ERROR_PARAM_IS_NOT_ALLOWED);
+
+
+    const url = new URL(request.url);
+    const body = getRequestBody(request);
+    const headers = processHeaders(request, body);
+    
+    const CanonicalRequestObj = {
+        HTTPMethod: request.method,
+        CanonicalURI: url.pathname,
+        CanonicalQueryString: encodeQueryStringParameters(url.searchParams),
+        CanonicalHeaders: formatCanonicalHeaders(headers),
+        SignedHeaders: formatSignedHeaders(headers),
+        HashedPayload: hex(sha256(body)),
+    };
+
+    return `${CanonicalRequestObj.HTTPMethod}\n${CanonicalRequestObj.CanonicalURI}\n${CanonicalRequestObj.CanonicalQueryString}\n${CanonicalRequestObj.CanonicalHeaders}\n${CanonicalRequestObj.SignedHeaders}\n${CanonicalRequestObj.HashedPayload}\n`;
+}
+
+
+/**
+ * Creates Scope object for signed string i.e. "20130606/us-east-1/s3/aws4_request"
+ * 
+ * @export
+ * @returns {String}
+ */
+export function createScope() {
+    return `${getShortDate()}/${AWS_REGION}/s3/aws4_request`;
+}
+
+
+/**
+ * Returns string to sign
+ * 
+ * @export
+ * @param {any} canonicalRequest 
+ * @returns 
+ */
+export function createStringToSign(canonicalRequest) {
+    if (!canonicalRequest) throw Error(ERROR_PARAM_REQUIRED);
+
+    const timeStampISO8601Format = getAWSTimestamp();
+    const scope = createScope();
+    const request = hex(sha256(canonicalRequest));
+
+    return `${AUTH_IDENTIFIER_HEADER}\n${timeStampISO8601Format}\n${scope}\n${request}`;
+}
+
+/**
+ * Returns Signing key
+ * 
+ * @export
+ * @returns 
+ */
+export function createSigningKey() {
+    return hmacSHA256(hmacSHA256(hmacSHA256(hmacSHA256(`AWS4${AWS_SECRET_ACCESS_KEY}`, getShortDate()), AWS_REGION), 's3'), 'aws4_request');
+}
+
+/**
+ * Returns signature
+ * 
+ * @export
+ * @param {any} signingKey 
+ * @param {any} stringToSign 
+ * @returns 
+ */
+export function createSignature(signingKey, stringToSign) {
+    return hmacSHA256(signingKey, stringToSign);
+}
+
+/**
+ * Returns Authorization Header
+ * 
+ * @export
+ * @param {any} signature 
+ * @returns 
+ */
+export function createAuthorizationHeader(signature) {
+    return `${AUTH_IDENTIFIER_HEADER} Credential=${AWS_ACCESS_KEY_ID}/${getShortDate()}/${AWS_REGION}/s3/aws4_request,SignedHeaders=host;range;x-amz-content-sha256;x-amz-date,Signature=${signature}`;
 }

@@ -4,10 +4,7 @@ import sinon from 'sinon';
 import * as utils from './utils';
 import * as consts from '../consts';
 import * as _ from './_aws';
-import {
-    createCanonicalRequest,
-    // createStringToSign,
-} from './aws';
+
 
 /**
  * 'PRIVATE' methods
@@ -21,6 +18,16 @@ test('getAWSTimestamp returns right format', (t) => {
 
     clock.restore();
 });
+
+test('getShortDate returns right format', (t) => {
+    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z'));
+
+    t.plan(1);
+    t.equal(_.getShortDate(), '20170711');
+
+    clock.restore();
+});
+
 
 test('AWSURIEncode requires string input and bool encodeSlash params', (t) => {
     const stubHex = sinon.stub(utils, 'hex');
@@ -387,17 +394,17 @@ test('createCanonicalRequest requires url as string and method const inputs', (t
     const stubformatSH = sinon.stub(_, 'formatSignedHeaders').returns('');
     const stubHex = sinon.stub(utils, 'hex');
 
-    t.throws(() => createCanonicalRequest(), Error(consts.ERROR_PARAM_REQUIRED));
-    t.throws(() => createCanonicalRequest('foo'), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => createCanonicalRequest(['foo']), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => createCanonicalRequest(987), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.throws(() => createCanonicalRequest({}), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    t.throws(() => createCanonicalRequest({ method: 'foo' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
-    t.throws(() => createCanonicalRequest({ method: 'POST' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
-    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_REQUIRED));
-    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
-    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PROPERTY_NOT_FOUND));
-    t.doesNotThrow(() => createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.throws(() => _.createCanonicalRequest(), Error(consts.ERROR_PARAM_REQUIRED));
+    t.throws(() => _.createCanonicalRequest('foo'), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.createCanonicalRequest(['foo']), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.createCanonicalRequest(987), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.throws(() => _.createCanonicalRequest({}), Error(consts.ERROR_PROPERTY_NOT_FOUND));
+    t.throws(() => _.createCanonicalRequest({ method: 'foo' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.throws(() => _.createCanonicalRequest({ method: 'POST' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
+    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_REQUIRED));
+    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_TYPE_IS_NOT_OBJECT));
+    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PROPERTY_NOT_FOUND));
+    t.doesNotThrow(() => _.createCanonicalRequest({ method: 'GET', url: 'http://bbh.co.uk' }), Error(consts.ERROR_PARAM_IS_NOT_ALLOWED));
 
     t.end();
     stubHex.restore();
@@ -425,7 +432,7 @@ test('createCanonicalRequest calls all sub functions and returns formatted strin
     // stubURL.searchParams = 'querystring=testqa';
 
     const reqParam = { method: 'GET', url: 'http://bbh.co.uk/url-path' };
-    const result = createCanonicalRequest(reqParam);
+    const result = _.createCanonicalRequest(reqParam);
     t.ok(stubReqBody.calledOnce);
     t.ok(stubReqBody.calledWith(reqParam));
     t.ok(stubProcHead.calledOnce);
@@ -451,7 +458,30 @@ test('createCanonicalRequest calls all sub functions and returns formatted strin
     stubReqBody.restore();
 });
 
-test.skip('createStringToSign requires url as string and method const inputs', (t) => {
-    t.fail('not implemented');
-    t.end();
+
+test('createScope returns right format', (t) => {
+    const clock = sinon.useFakeTimers(new Date('2017-07-11T09:46:56Z'));
+
+    t.plan(1);
+    t.equal(_.createScope(), `20170711/${consts.AWS_REGION}/s3/aws4_request`);
+
+    clock.restore();
+});
+
+
+test('createStringToSign returns correct format', (t) => {
+
+    const timestamp = '20130524T000000Z';
+    const stubTimestamp = sinon.stub(_, 'getAWSTimestamp').returns(timestamp);
+    const scope = 'scope';
+    const stubScope = sinon.stub(_, 'createScope').returns(scope);
+    const canonicalRequest = 'canonicalRequest';
+
+    t.plan(1);
+    const actual = _.createStringToSign(canonicalRequest);
+    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${canonicalRequest}`;
+    t.equal(actual, expected);
+
+    stubTimestamp.restore();
+    stubScope.restore();
 });
