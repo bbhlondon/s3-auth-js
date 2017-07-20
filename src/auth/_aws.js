@@ -234,7 +234,7 @@ export function formatSignedHeaders(headers) {
 
 
 /**
- * Returns date in formay YYYYMMDD
+ * Returns date in format YYYYMMDD
  * 
  * @export
  * @returns {String}
