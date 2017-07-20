@@ -250,7 +250,6 @@ export function getShortDate() {
 }
 
 
-
 /**
  * Returns a string in the format AWS requires, with 'keys' for:
  * HTTPMethod, CanonicalURI, CanonicalQueryString, CanonicalHeaders, SignedHeaders, HashedPayload
@@ -268,7 +267,7 @@ export function createCanonicalRequest(request) {
     const url = new URL(request.url);
     const body = getRequestBody(request);
     const headers = processHeaders(request, body);
-    
+
     const CanonicalRequestObj = {
         HTTPMethod: request.method,
         CanonicalURI: url.pathname,
