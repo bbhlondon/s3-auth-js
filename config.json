@@ -2,7 +2,5 @@
     "GATEWAY_URL": "/gateway.html",
     "INDEX_URL": "/test.html",
     "AUTH_METHOD": "AWS4_SIGNED_HEADERS",
-    "AWS_REGION": "eu_west_2",
-    "AWS_ACCESS_KEY_ID": "AWSAccessKeyId",
-    "AWS_SECRET_ACCESS_KEY": "YourSecretAccessKey"
+    "AWS_REGION": "eu_west_2"
 }

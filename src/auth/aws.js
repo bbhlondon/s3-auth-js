@@ -12,8 +12,6 @@ import {
     ERROR_PARAM_TYPE_IS_NOT_STRING,
     HTTP_METHODS_ALLOWED,
     AWS_REGION,
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
     AUTH_IDENTIFIER_HEADER,
 } from '../consts';
 import * as _ from './_aws';
@@ -105,7 +103,7 @@ export function createSignature(signingKey, stringToSign) {
 
 
 /**
- * Returns Authorization Header
+ * Returns Authorization header
  * 
  * @export
  * @param {any} awsAccessKey 
@@ -124,12 +122,23 @@ export function createAuthorizationHeader(awsAccessKey, awsRegion, signature) {
     return `${AUTH_IDENTIFIER_HEADER} Credential=${awsAccessKey}/${_.getShortDate()}/${awsRegion}/s3/aws4_request,SignedHeaders=host;range;x-amz-content-sha256;x-amz-date,Signature=${signature}`;
 }
 
-export function ammendRequest(request) {
-    const canonicalRequest = createCanonicalRequest(request);
-    const stringToSign = createStringToSign(canonicalRequest);
-    const signingKey = createSigningKey(AWS_SECRET_ACCESS_KEY, AWS_REGION);
-    const signature = createSignature(signingKey, stringToSign);
-    createAuthorizationHeader(AWS_ACCESS_KEY_ID, AWS_REGION, signature);
-    // TODO: Ammend the request
-    return request;
+/**
+ * Returns x-amz-content-sha256 header
+ * 
+ * @export
+ * @returns 
+ */
+export function createXAmzContentSha256Header() {
+    return sha256('').toString();
+}
+
+
+/**
+ * Returns x-amz-date header
+ * 
+ * @export
+ * @returns 
+ */
+export function createXZmzDateHeader() {
+    return _.getAWSTimestamp();
 }
