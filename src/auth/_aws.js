@@ -26,7 +26,6 @@ import {
  * @returns {String}
  */
 export function toHmacSHA256(message, key) {
-    
     if (message === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof message !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
     if (key === undefined) throw Error(ERROR_PARAM_REQUIRED);
