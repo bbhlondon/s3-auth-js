@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import sha256 from 'crypto-js/sha256';
+import hmacSHA256 from 'crypto-js/hmac-sha256';
 import {
     ERROR_PARAM_REQUIRED,
     ERROR_PARAM_TYPE_IS_NOT_STRING,
@@ -14,6 +15,39 @@ import {
     pad,
     hex,
 } from './utils';
+
+
+/**
+ * Performs HmacSHA256 encryption
+ * 
+ * @export
+ * @param {any} message 
+ * @param {any} key 
+ * @returns {String}
+ */
+export function toHmacSHA256(message, key) {
+    if (message === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof message !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+    if (key === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof key !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+
+    return hmacSHA256(key, message).toString();
+}
+
+/**
+ * Performs SHA256 encryption
+ * 
+ * @export
+ * @param {any} message 
+ * @returns {String}
+ */
+export function toSHA256(message) {
+    if (message === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof message !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+
+    return sha256(message).toString();
+}
+
 
 /**
  * Returns ISO8601 timestamp e.g. "20130524T000000Z"
@@ -165,7 +199,7 @@ export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS'
     if (authMethod === 'AWS4_SIGNED_HEADERS') {
         headers.push({
             name: 'x-amz-content-sha256',
-            value: sha256(body).toString(),
+            value: toSHA256(body),
         });
     }
 
@@ -190,7 +224,7 @@ export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS'
  * ingesting a URL.headers object and returning a string
  *
  * @export
- * @returns {object}
+ * @returns {Object}
  */
 export function formatCanonicalHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -212,7 +246,7 @@ export function formatCanonicalHeaders(headers) {
  * ingesting a URL.headers object and returning a string
  *
  * @export
- * @returns {object}
+ * @returns {Object}
  */
 export function formatSignedHeaders(headers) {
     if (headers === undefined) throw Error(ERROR_PARAM_REQUIRED);
@@ -228,3 +262,16 @@ export function formatSignedHeaders(headers) {
 
     return response.slice(0, -1);
 }
+
+
+/**
+ * Returns date in format YYYYMMDD
+ * 
+ * @export
+ * @returns {String}
+ */
+export function getShortDate() {
+    const now = new Date();
+    return `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
+}
+
