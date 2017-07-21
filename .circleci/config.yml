@@ -23,9 +23,6 @@ jobs:
       - restore_cache:
           key: yarn-{{ checksum "yarn.lock" }}
       - run:
-          name: lint
-          command: yarn lint
-      - run:
           name: test
           command: 'yarn test'
       # - run:
@@ -37,6 +34,16 @@ jobs:
       # - store_artifacts:
       #     path: coverage
       #     prefix: coverage
+  lint:
+    docker:
+      - image: circleci/node:7.9.0-browsers
+    steps:
+      - checkout
+      - restore_cache:
+          key: yarn-{{ checksum "yarn.lock" }}
+      - run:
+          name: lint
+          command: yarn lint
       
 workflows:
   version: 2
