@@ -2,40 +2,36 @@ import test from 'tape';
 import sinon from 'sinon';
 import { getToken, setToken, deleteToken } from './storage';
 import * as idb from './../idb';
+import * as consts from '../consts';
 
 
-const TEST_TOKEN = '123456';
+test('setToken returns passed value', (t) => {
+    const expectedCredentials = {
+        type: consts.AUTH_AWS4_SIGNED_HEADERS, payload: { key: 'key', secret: 'secret' },
+    };
 
-test('setToken return passed value', (t) => {
     t.plan(1);
-    setToken(TEST_TOKEN).then(value => t.equal(value, TEST_TOKEN));
+    setToken(expectedCredentials).then(value => t.looseEqual(value, expectedCredentials));
 });
 
-test('setToken throws exception when no value passed', (t) => {
-    t.plan(1);
-    setToken().then(() => { }, e => t.equal(e.message, 'Value undefined'));
+test('setToken throws exception when incorret value passed', (t) => {
+    t.plan(3);
+    setToken().then(() => { }, e => t.equal(e.message, consts.ERROR_PARAM_REQUIRED));
+    // @ts-ignore
+    setToken({ type: 'TYPE' }).then(() => { }, e => t.equal(e.message, consts.ERROR_PARAM_REQUIRED));
+    // @ts-ignore
+    setToken({ payload: {} }).then(() => { }, e => t.equal(e.message, consts.ERROR_PARAM_REQUIRED));
 });
 
-test('setToken throws exception when Array passed', (t) => {
-    t.plan(1);
-    setToken([]).then(() => { }, e => t.equal(e.message, 'Token must be a string'));
-});
-
-test('setToken throws exception when Object passed', (t) => {
-    t.plan(1);
-    setToken({}).then(() => { }, e => t.equal(e.message, 'Token must be a string'));
-});
-
-test('setToken throws exception when undefined passed', (t) => {
-    t.plan(1);
-    setToken(undefined).then(() => { }, e => t.equal(e.message, 'Value undefined'));
-});
 
 test('setToken calls idb', (t) => {
     const stub = sinon.stub(idb, 'storeSet').returns(Promise.resolve());
+    const expectedCredentials = {
+        type: consts.AUTH_AWS4_SIGNED_HEADERS, payload: { key: 'key', secret: 'secret' },
+    };
 
     t.plan(1);
-    setToken(TEST_TOKEN).then(() => t.ok(stub.calledOnce));
+    setToken(expectedCredentials).then(() => t.ok(stub.calledOnce));
 
     stub.restore();
 });

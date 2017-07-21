@@ -1,4 +1,5 @@
-import { getToken, setToken, deleteToken } from './storage';
+import * as _ from './_state';
+import { ERROR_PARAM_REQUIRED } from '../consts';
 
 // Credentials
 let credentials;
@@ -13,15 +14,14 @@ export function isAuthorized() {
 }
 
 /**
- * Set credentials
- *
+ * Initialize state
+ * 
  * @export
- * @param {any} newValue
- * @returns {Promise}
+ * @returns 
  */
-export function setCredentials(newValue) {
-    return setToken(newValue).then((storedToken) => {
-        credentials = storedToken;
+export function initializeState() {
+    return _.retriveCredentials().then((storedCredentials) => {
+        credentials = storedCredentials;
 
         return credentials;
     });
@@ -31,12 +31,35 @@ export function setCredentials(newValue) {
  * Get credentials
  *
  * @export
- * @returns {Promise}
+ * @returns {Object}
  */
 export function getCredentials() {
-    if (credentials) { return Promise.resolve(credentials); }
-    return getToken();
+    return credentials;
 }
+
+
+/**
+ * Set credentials
+ *
+ * @export
+ * @param {any} newValue
+ * @returns {Promise}
+ */
+export function setCredentials({ type, payload }) {
+    try {
+        if (!type) throw new Error(ERROR_PARAM_REQUIRED);
+        if (!payload) throw new Error(ERROR_PARAM_REQUIRED);
+
+        return _.storeCredentials({ type, payload }).then((storedCredentials) => {
+            credentials = storedCredentials;
+
+            return credentials;
+        });
+    } catch (e) {
+        return Promise.reject(e);
+    }
+}
+
 
 /**
  * Delete credentials
@@ -45,7 +68,7 @@ export function getCredentials() {
  * @returns {Promise}
  */
 export function deleteCredentials() {
-    return deleteToken().then((storedToken) => {
+    return _.deleteCredentials().then((storedToken) => {
         credentials = storedToken;
 
         return credentials;

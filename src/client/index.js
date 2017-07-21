@@ -3,7 +3,7 @@ import registerServiceWorker from './register';
 import { initializeForm, displayMessage } from './form';
 import sendMessage from './messaging';
 import makeMessage from '../utils';
-import { MESSAGE_SET_CREDENTIALS } from '../consts';
+import { MESSAGE_SET_CREDENTIALS, AUTH_AWS4_SIGNED_HEADERS } from '../consts';
 
 
 /**
@@ -15,7 +15,7 @@ function initialize(swPath) {
     registerServiceWorker(swPath).then(() => {
         initializeForm(document.querySelector('#form'), ({ name, password }) => {
             Logger.log('Submit form');
-            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { name, password, token: 'token' })).then(() => {
+            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { type: AUTH_AWS4_SIGNED_HEADERS, key: name, secret: password })).then(() => {
                 Logger.log('ACK');
             });
         });

@@ -2,7 +2,7 @@ import Logger from '../logger';
 import { respondWithRedirectToGateway, respondWithRequestedItem, repondWithRedirectToIndex } from './responses';
 import { isBypassed, isGateway, shouldInterceptRequest, respond } from './_handlers';
 import makeMessage from '../utils';
-import { isAuthorized, setCredentials, getCredentials, deleteCredentials } from './state';
+import { isAuthorized, initializeState, setCredentials, deleteCredentials } from './state';
 import { BYPASSED_URLS, GATEWAY_URL, MESSAGE_SET_CREDENTIALS, MESSAGE_CREDENTIALS_SET, MESSAGE_DELETE_CREDENTIALS, MESSAGE_CREDENTIALS_DELETED } from '../consts';
 
 
@@ -27,7 +27,7 @@ export function handleActivate(event) {
     self.clients.claim();
 
     event.waitUntil(
-        getCredentials().then(() => {
+        initializeState().then(() => {
             Logger.log(`[Service worker] Activated; isAuthorized: ${isAuthorized()}`);
         }),
     );
@@ -48,7 +48,7 @@ export function handleMessage(event) {
 
         switch (type) {
         case MESSAGE_SET_CREDENTIALS:
-            setCredentials(payload.token).then(() => {
+            setCredentials(payload).then(() => {
                 port.postMessage(makeMessage(MESSAGE_CREDENTIALS_SET));
             });
             break;
