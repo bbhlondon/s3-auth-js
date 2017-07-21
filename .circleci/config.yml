@@ -6,14 +6,15 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dep-cache-{{ checksum "yarn.lock" }}
       - run:
           name: dependency-install
           command: yarn install --dev
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dep-cache-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
+            - .node_modules
   test:
     docker:
       - image: circleci/node:7.9.0-browsers
