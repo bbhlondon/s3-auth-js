@@ -1,4 +1,5 @@
 import { storeGet, storeSet, storeDelete } from './../idb';
+import { ERROR_UNSUPPORTED_AUTH_TYPE, ERROR_PARAM_REQUIRED, AUTH_AWS4_SIGNED_HEADERS } from '../consts';
 
 const TOKEN_NAME = 'token';
 
@@ -9,8 +10,23 @@ const TOKEN_NAME = 'token';
  * @returns {Promise}
  */
 export function getToken() {
-    return storeGet(TOKEN_NAME);
+    return storeGet(TOKEN_NAME).then((token) => {
+        if (token) {
+            const arr = token.split(':');
+            const type = arr[0];
+
+            switch (type) {
+            case AUTH_AWS4_SIGNED_HEADERS:
+                return { type: arr[0], key: arr[1], secret: arr[2] };
+            default:
+                return null;
+            }
+        } else {
+            return null;
+        }
+    });
 }
+
 
 /**
  * Set stored token
@@ -18,12 +34,22 @@ export function getToken() {
  * @export
  * @returns {Promise}
  */
-export function setToken(value) {
+export function setToken({ type = '', payload = null } = {}) {
     try {
-        if (!value) throw Error('Value undefined');
-        if (value && typeof value !== 'string') throw Error('Token must be a string');
+        if (!type) throw new Error(ERROR_PARAM_REQUIRED);
+        if (!payload) throw new Error(ERROR_PARAM_REQUIRED);
 
-        return storeSet(TOKEN_NAME, value).then(() => value);
+        let token;
+
+        switch (type) {
+        case AUTH_AWS4_SIGNED_HEADERS:
+            token = `${type}:${payload.key}:${payload.secret}`;
+            break;
+        default:
+            throw new Error(ERROR_UNSUPPORTED_AUTH_TYPE);
+        }
+
+        return storeSet(TOKEN_NAME, token).then(() => ({ type, payload }));
     } catch (e) {
         return Promise.reject(e);
     }
