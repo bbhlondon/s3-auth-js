@@ -24,7 +24,8 @@ export function respondWithRedirectToGateway(event) {
  */
 export function respondWithRequestedItem(event) {
     Logger.log('[Service worker] Response received');
-    // TODO: Modify headers
+
+    // TODO: Amend request
     return new Request(event.request);
 }
 
