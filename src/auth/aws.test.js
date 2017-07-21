@@ -310,7 +310,7 @@ test('processHeaders content header is correctly hashed', (t) => {
 
     const headers = _.processHeaders(req, 'body-content');
     const contentHeader = headers.find(el => el.name === 'x-amz-content-sha256');
-    t.equal(contentHeader.value, _.toSHA256('body-content').toString());
+    t.equal(contentHeader.value, _.toSHA256('body-content'));
 
     t.end();
     stubVerify.restore();
@@ -471,16 +471,13 @@ test('createScope returns right format', (t) => {
 
 test('createStringToSign returns correct format', (t) => {
     const timestamp = '20130524T000000Z';
-    const stubTimestamp = sinon.stub(_, 'getAWSTimestamp').returns(timestamp);
     const scope = 'scope';
     const canonicalRequest = 'request';
 
     t.plan(1);
-    const actual = createStringToSign(canonicalRequest, scope);
-    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(_.toSHA256(canonicalRequest).toString())}`;
+    const actual = createStringToSign(canonicalRequest, scope, timestamp);
+    const expected = `${consts.AUTH_IDENTIFIER_HEADER}\n${timestamp}\n${scope}\n${utils.hex(_.toSHA256(canonicalRequest))}`;
     t.equal(actual, expected);
-
-    stubTimestamp.restore();
 });
 
 test('createStringToSign handles errors', (t) => {

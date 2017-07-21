@@ -26,7 +26,13 @@ import {
  * @returns {String}
  */
 export function toHmacSHA256(message, key) {
-    return hmacSHA256(message, key);
+    
+    if (message === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof message !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+    if (key === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof key !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+
+    return hmacSHA256(key, message).toString();
 }
 
 /**
@@ -37,7 +43,10 @@ export function toHmacSHA256(message, key) {
  * @returns {String}
  */
 export function toSHA256(message) {
-    return sha256(message);
+    if (message === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (typeof message !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+
+    return sha256(message).toString();
 }
 
 
@@ -191,7 +200,7 @@ export function processHeaders(request, body, authMethod = 'AWS4_SIGNED_HEADERS'
     if (authMethod === 'AWS4_SIGNED_HEADERS') {
         headers.push({
             name: 'x-amz-content-sha256',
-            value: toSHA256(body).toString(),
+            value: toSHA256(body),
         });
     }
 

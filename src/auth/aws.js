@@ -53,6 +53,7 @@ export function createCanonicalRequest(request) {
  * @returns {String}
  */
 export function createScope(awsRegion) {
+    if (awsRegion === undefined) throw Error(ERROR_PARAM_REQUIRED);
     return `${_.getShortDate()}/${awsRegion}/s3/aws4_request`;
 }
 
@@ -64,12 +65,13 @@ export function createScope(awsRegion) {
  * @param {any} canonicalRequest 
  * @returns 
  */
-export function createStringToSign(canonicalRequest, scope) {
-    if (!canonicalRequest) throw Error(ERROR_PARAM_REQUIRED);
+export function createStringToSign(canonicalRequest, scope, timeStampISO8601Format) {
+    if (canonicalRequest === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof canonicalRequest !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
+    if (scope === undefined) throw Error(ERROR_PARAM_REQUIRED);
+    if (timeStampISO8601Format === undefined) throw Error(ERROR_PARAM_REQUIRED);
 
-    const timeStampISO8601Format = _.getAWSTimestamp();
-    const request = hex(_.toSHA256(canonicalRequest).toString());
+    const request = hex(_.toSHA256(canonicalRequest));
 
     return `${AUTH_IDENTIFIER_HEADER}\n${timeStampISO8601Format}\n${scope}\n${request}`;
 }
@@ -83,9 +85,9 @@ export function createStringToSign(canonicalRequest, scope) {
  * @returns {String}
  */
 export function createSigningKey(awsSecretKey, awsRegion) {
-    if (!awsSecretKey) throw Error(ERROR_PARAM_REQUIRED);
+    if (awsSecretKey === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof awsSecretKey !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (!awsRegion) throw Error(ERROR_PARAM_REQUIRED);
+    if (awsRegion === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof awsRegion !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
     return _.toHmacSHA256(_.toHmacSHA256(_.toHmacSHA256(_.toHmacSHA256(`AWS4${awsSecretKey}`, _.getShortDate()), awsRegion), 's3'), 'aws4_request');
@@ -100,12 +102,12 @@ export function createSigningKey(awsSecretKey, awsRegion) {
  * @returns {String}
  */
 export function createSignature(signingKey, stringToSign) {
-    if (!signingKey) throw Error(ERROR_PARAM_REQUIRED);
+    if (signingKey === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof signingKey !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (!stringToSign) throw Error(ERROR_PARAM_REQUIRED);
+    if (stringToSign === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof stringToSign !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
-    return _.toHmacSHA256(stringToSign, signingKey);
+    return _.toHmacSHA256(signingKey, stringToSign);
 }
 
 
@@ -119,11 +121,11 @@ export function createSignature(signingKey, stringToSign) {
  * @returns {String}
  */
 export function createAuthorizationHeader(awsAccessKey, awsRegion, signature) {
-    if (!awsAccessKey) throw Error(ERROR_PARAM_REQUIRED);
+    if (awsAccessKey === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof awsAccessKey !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (!awsRegion) throw Error(ERROR_PARAM_REQUIRED);
+    if (awsRegion === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof awsRegion !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
-    if (!signature) throw Error(ERROR_PARAM_REQUIRED);
+    if (signature === undefined) throw Error(ERROR_PARAM_REQUIRED);
     if (typeof signature !== 'string') throw Error(ERROR_PARAM_TYPE_IS_NOT_STRING);
 
     return `${AUTH_IDENTIFIER_HEADER} Credential=${awsAccessKey}/${_.getShortDate()}/${awsRegion}/s3/aws4_request,SignedHeaders=host;range;x-amz-content-sha256;x-amz-date,Signature=${signature}`;
@@ -136,7 +138,7 @@ export function createAuthorizationHeader(awsAccessKey, awsRegion, signature) {
  * @returns 
  */
 export function createXAmzContentSha256Header() {
-    return _.toSHA256('').toString();
+    return _.toSHA256('');
 }
 
 
@@ -146,6 +148,11 @@ export function createXAmzContentSha256Header() {
  * @export
  * @returns 
  */
-export function createXZmzDateHeader() {
-    return _.getAWSTimestamp();
+export function createXZmzDateHeader(timeStampISO8601Format) {
+    if (timeStampISO8601Format === undefined) throw Error(ERROR_PARAM_REQUIRED);
+
+    return timeStampISO8601Format;
 }
+
+
+export function getAWSTimestamp() { return _.getAWSTimestamp(); }
