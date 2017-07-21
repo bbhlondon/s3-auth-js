@@ -15,7 +15,11 @@ function initialize(swPath) {
     registerServiceWorker(swPath).then(() => {
         initializeForm(document.querySelector('#form'), ({ name, password }) => {
             Logger.log('Submit form');
-            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, { type: AUTH_AWS4_SIGNED_HEADERS, key: name, secret: password })).then(() => {
+            sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, {
+                type: AUTH_AWS4_SIGNED_HEADERS,
+                key: name,
+                secret: password,
+            })).then(() => {
                 Logger.log('ACK');
             });
         });
