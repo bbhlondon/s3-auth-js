@@ -5,6 +5,7 @@ export { GATEWAY_URL, INDEX_URL, AUTH_METHOD, AWS_REGION } from './../config.jso
 export const AUTH_IDENTIFIER_HEADER = 'AWS4-HMAC-SHA256';
 export const BYPASSED_URLS = [
     '/client.js',
+    '/test.html',
     'browser-sync',
 ];
 

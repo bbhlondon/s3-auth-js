@@ -17,8 +17,10 @@ function initialize(swPath) {
             Logger.log('Submit form');
             sendMessage(makeMessage(MESSAGE_SET_CREDENTIALS, {
                 type: AUTH_AWS4_SIGNED_HEADERS,
-                key: name,
-                secret: password,
+                payload: {
+                    key: name,
+                    secret: password,
+                },
             })).then(() => {
                 Logger.log('ACK');
             });
