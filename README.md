@@ -2,8 +2,7 @@
 
 > Javascript / Service Worker helper for S3 authentication
 
-[![CircleCI](https://circleci.com/gh/bbhlondon/s3-auth-js.svg?style=shield)](https://circleci.com/gh/bbhlondon/s3-auth-js) 
-[![codecov](https://codecov.io/gh/bbhlondon/s3-auth-js/branch/master/graph/badge.svg)](https://codecov.io/gh/bbhlondon/s3-auth-js)
+[![CircleCI](https://img.shields.io/circleci/project/github/bbhlondon/s3-auth-js.svg)](https://circleci.com/gh/bbhlondon/workflows/s3-auth-js)
 [![David](https://david-dm.org/bbhlondon/s3-auth-js.svg)](https://david-dm.org/bbhlondon/s3-auth-js.svg)
 [![Known Vulnerabilities](https://snyk.io/test/github/bbhlondon/s3-auth-js/badge.svg)](https://snyk.io/test/github/bbhlondon/s3-auth-js)
 
